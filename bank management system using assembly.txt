@@ -1,0 +1,815 @@
+include irvine32.inc
+include macros.inc
+bsize=300
+;  .............................................................................................
+;                                        customer struct
+;...............................................................................................
+customer struct
+	nam1 byte 30 dup (0)
+	Accountno db 12 dup(?)
+	mobile_no db 12 dup(?)
+	address byte 30 dup (0)
+	balance dd ?
+	balance1 byte 30 dup (0)
+customer ends
+Max=3
+
+;  .............................................................................................
+;                                        Data section
+;...............................................................................................
+.data
+obj customer max+3 dup(<>)
+str2 byte sizeof bsize dup(?)
+bankuserid byte "bankuserid.txt",0
+filename byte "project.txt",0
+str1 byte sizeof bsize dup(?)
+line byte " ",0dh,0ah,0
+accname dd 10 dup(?)
+accadd dd 10 dup(?)
+name1 handle ?
+ids handle ?
+data1 handle ?
+username db "Syed Akmal",0
+userpassword db "12345",0
+information db 12 dup(?)
+count dd ?
+caption1 BYTE "Confirmation",0
+question1 BYTE " Do you want to add more ?." ,0dh,0ah
+caption2 BYTE "Confirmation",0
+question2 BYTE " Do you want to delete ?." ,0dh,0ah
+caption3 BYTE "Confirmation",0
+question3 BYTE " Do you want to update on file ?." ,0dh,0ah
+sample dword ?
+forloop dword 1 
+counts dword ?
+sub1 dd ?
+checK dd ?
+count6 dd 0
+;  .............................................................................................
+;                                        code  section
+;...............................................................................................
+.code
+
+;  .............................................................................................
+;                                        mainmenu proc
+;...............................................................................................
+mainmenu proc
+st1::
+mwrite "                                         WELCOME TO THE BANK MANAGEMENT SYSTEM"
+call crlf
+mwrite "                                              1- lOGIN AS A BANK USER"
+call crlf
+mwrite "                                              2- LOGIN AS A CUSTOMER"
+call crlf
+mwrite "                                              3- EXIT"
+call crlf
+call readint
+.if eax==1
+;push userpassword
+;push offset str1
+call userlogin
+.elseif eax==2
+call customerlogin
+.elseif eax==3
+jmp exitingprogram
+.else
+mwrite " Input error try again"
+call crlf
+jmp st1
+.endif
+call crlf
+ret 
+mainmenu endp
+
+;  .............................................................................................
+;                                        User login procedure
+;...............................................................................................
+userlogin proc
+a:
+Mwrite "<-----------------LOGIN------------------>"
+Call crlf
+.if count6!=3
+mwrite "Enter your username : "
+Mreadstring information
+call crlf
+INVOKE str_compare ,ADDR information ,ADDR  username     
+JE  pasword
+JNE invalid
+pasword:
+Call crlf
+Mwrite "ENTER PASSWORD	:  "
+mreadstring information
+Call crlf
+INVOKE str_compare ,ADDR information ,ADDR  userpassword   					
+JE  welcom
+JNE invalid
+Call exitprocess
+invalid:
+mwrite "-------------------ACCESS DENIED------------------"
+CALL CRLF
+inc count6
+CALL WAITMSG
+call crlf
+Mwrite "--------- INCORRECT USERNAME OR PASSWORD ---------"
+CALL CRLF
+jmp a
+Call crlf
+welcom:
+Mwrite "--------------------- VERIFIED ----------------------"
+call crlf
+call crlf
+call waitmsG
+jmp usermenu
+call crlf
+.else
+jmp d6
+.endif
+pop ebp
+ret
+userlogin endp
+
+;  .............................................................................................
+;                                        user menu procedure
+;...............................................................................................
+usermenu proc
+call clrscr
+usermenue::
+mwrite "                                                   USER'S MENU "
+call crlf
+mwrite "                                              1- FOR ADDING NEW APPLICANT"
+call crlf
+mwrite "                                              2- FOR SEARCHING  APPLICANT"
+call crlf
+mwrite "                                              3- FOR DELETING  APPLICANT"
+call crlf
+mwrite "                                              4- FOR UPDATING  APPLICANT"
+call crlf
+mwrite "                                              5- FOR SHOWING THE DATA OF ALL APPLICANTS APPLICANT"
+call crlf
+mwrite "                                              6- FOR STORING THE DATA ON THE FILE"
+CALL CRLF
+mwrite "                                              7- FOR MAIN MENU"
+CALL CRLF
+call readint
+.if eax==1
+call clrscr
+call adding 
+.elseif eax==2
+call clrscr
+call searching
+.elseif eax==3
+call clrscr
+call delete
+.elseif eax==4
+call clrscr
+call update
+call clrscr
+.elseif eax==5
+call clrscr
+call list
+call clrscr
+.elseif eax==6
+call clrscr
+mov check,1
+call FILE
+call clrscr
+.elseif eax==7
+call clrscr
+jmp token1
+.else
+
+
+.endif
+ret
+usermenu endp
+
+;  .............................................................................................
+;                                        adding customer procedure
+;...............................................................................................
+adding proc
+mov ebx,0
+mov esi,0	
+call crlf
+mov count,0
+input:
+mwrite "Enter your name please  : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].nam1
+mwrite "Enter Account Number (Having only 5 digits) : "
+mreadstring information
+invoke str_copy,ADDR information,ADDR [obj + ebx].accountno
+mwrite "Enter Mobile  Number (Having only 11 digits) : "
+mreadstring information
+invoke str_copy,ADDR information,ADDR [obj + ebx].mobile_no
+mwrite "Enter Customer address (Only City Name please)  : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].address
+mwrite "Enter the balance of the customer : "
+call readint 
+mov [obj + ebx].balance,eax
+mwrite "Please Re-confirm the amount : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].balance1
+add ebx,type customer
+inc count 
+mov sample,ebx
+;mov eax,count
+call crlf
+mov ebx,OFFSET caption1
+mov edx,OFFSET question1
+call MsgBoxAsk
+mov ebx,sample
+cmp eax,IDYES
+je input		              ;loop for cheking
+mov eax,count
+mov forloop,eax
+call crlf
+call clrscr
+jmp usermenue
+call crlf
+;call exitprocess
+ret
+adding endp
+;  .............................................................................................
+;                                        searching procedure
+;...............................................................................................
+searching proc
+mwrite "ENTER THE ACCOUNT NUMBER WHICH YOU WANT TO SEARCH   : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT YOUR DATA IS SEARCHING..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov esi,forloop
+mov counts,1
+search1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je find
+add counts,1
+add ebx,type customer
+cmp counts,esi
+jb search1
+cmp counts,esi
+je search1
+mwrite " Data is not in the record !"
+call waitmsg
+jmp ending
+find:
+mwrite "Data found ! "
+call crlf
+invoke str_copy , ADDR [obj+ebx].nam1,ADDR str1
+mov edx, offset str1
+mov ecx,lengthof str1
+mWrite"Name     :    "
+call writestring
+call crlf
+invoke str_copy,ADDR [obj + ebx].accountno,ADDR information
+mWrite"Account number is : "	
+mov edx,offset information 
+call writestring
+call crlf
+invoke str_copy,ADDR [obj + ebx].mobile_no,ADDR information
+mWrite"mobile  number is : "	
+mov edx,offset information 
+call writestring
+call crlf
+mwrite "Amount in the account : "
+mov eax,[obj + ebx].balance
+call writeint
+call crlf
+call waitmsg
+call crlf 
+ending:
+call clrscr
+jmp usermenue
+call crlf
+ret 
+searching endp
+;  .............................................................................................
+;                                        deleting record  procedure
+;...............................................................................................
+
+delete proc
+mwrite "ENTER THE ACCOUNT NUMBER WHICH YOU WANT TO Delete   : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT YOUR DATA IS SEARCHING..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov counts,1
+mov ecx,3
+s1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je f
+.if ecx!=0
+add ebx,type customer
+dec ecx
+.endif
+mwrite "Data not found !..."
+call crlf
+call waitmsg
+call crlf
+jmp down
+f:
+mov ebx,OFFSET caption2
+mov edx,OFFSET question2
+call MsgBoxAsk
+mov ebx,sample
+cmp eax,IDYES
+je del	
+jmp down
+del:
+mov [obj+ebx].nam1,NULL
+mov [obj+ebx].accountno,NULL
+mov [obj+ebx].mobile_no,NULL
+mov [obj+ebx].address,NULL
+mWrite "Record deleted Successfully....."
+call crlf
+call waitmsg
+call crlf
+down:
+call clrscr
+jmp usermenue
+call crlf
+ret
+delete endp
+
+;  .............................................................................................
+;                                        All customers list  procedure
+;...............................................................................................
+list proc
+mov ebx,0
+mov esi,forloop
+mov count,0
+call crlf
+output:
+invoke str_copy , ADDR [obj+ebx].nam1,ADDR str1
+mov edx, offset str1
+mov ecx,lengthof str1
+mWrite"Name     :    "
+call writestring
+call crlf
+invoke str_copy,ADDR [obj + ebx].accountno,ADDR information
+mWrite"Account number is : "	
+mov edx,offset information 
+call writestring
+call crlf
+invoke str_copy,ADDR [obj + ebx].mobile_no,ADDR information
+mWrite"mobile  number is : "	
+mov edx,offset information 
+call writestring
+call crlf
+mwrite "Amount in the account : "
+mov eax,[obj + ebx].balance
+call writeint
+call crlf
+add ebx,type customer
+inc count
+call crlf
+cmp esi,count
+jne output
+call waitmsg
+call clrscr
+jmp usermenue
+call crlf
+ret
+list endp
+;  .............................................................................................
+;                                        Update data procedure
+;...............................................................................................
+update proc
+mwrite "ENTER THE ACCOUNT NUMBER WHICH YOU WANT TO UPDATE  : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT YOUR DATA IS SEARCHING..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov counts,1
+mov ecx,forloop
+s1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je f
+.if ecx!=0
+add ebx,type customer
+dec ecx
+jmp s1
+.endif
+mwrite "Data not found !..."
+call crlf
+call waitmsg
+call crlf
+jmp down
+f:
+mwrite "Enter your name please  : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].nam1
+mwrite "Enter Account Number  : "
+mreadstring information
+invoke str_copy,ADDR information,ADDR [obj + ebx].accountno
+mwrite "Enter Mobile  Number  : "
+mreadstring information
+invoke str_copy,ADDR information,ADDR [obj + ebx].mobile_no
+mwrite "Enter Customer address : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].address
+mwrite "Enter the balance of the customer : "
+call readint 
+mov [obj + ebx].balance,eax
+mwrite "Please Re-confirm the amount : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].balance1
+down:
+CALL crlf
+call waitmsg
+call crlf
+call clrscr
+jmp usermenue
+call crlf
+ret
+update endp
+;  .............................................................................................
+;                                        customer  login procedure
+;...............................................................................................
+customerlogin proc
+mwrite "ENTER THE ACCOUNT NUMBER FOR LOG IN  : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT LOGGING IN..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov esi,forloop
+mov counts,1
+search1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je find
+add counts,1
+add ebx,type customer
+cmp counts,esi
+jb search1
+cmp counts,esi
+je search1
+mwrite "YOU HAVE NO ACCOUNT !"
+CALL CRLF
+call waitmsg
+jmp ending
+find:
+call customermenu
+ending:
+call crlf
+call clrscr
+call mainmenu
+ret
+customerlogin endp
+
+customermenu proc
+up:
+call clrscr
+customermenue::
+mwrite "                                                   CUSTOMER'S MENU"
+call crlf
+mwrite "                                              1- FOR BALANCE INQUIRY"
+call crlf
+mwrite "                                              2- FOR BALANCE WITHDRAW"
+call crlf
+mwrite "                                              3- FOR BALANCE DEPOSIT"
+call crlf
+mwrite "                                              4- FOR MAIN MENU"
+CALL CRLF
+call readint
+.if eax == 1
+call crlf
+call clrscr
+call balinq
+.elseif eax==2
+call clrscr
+call withdraw
+.elseif eax==3
+call clrscr
+call deposit
+.elseif eax==4
+jmp st1
+.else
+mwrite "Invalid entry try again please !"
+call crlf
+.endif
+call waitmsg
+jmp up
+call crlf
+ret 
+customermenu endp
+;  .............................................................................................
+;                                        balance inquiry procedure
+;...............................................................................................
+balinq  proc
+mwrite "RE-CONFIRM ACCOUNT NUMBER : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT LOGGING IN..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov esi,forloop
+mov counts,1
+search1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je find
+add counts,1
+add ebx,type customer
+cmp counts,esi
+jb search1
+cmp counts,esi
+je search1
+mwrite "YOU HAVE NO ACCOUNT !"
+CALL CRLF
+call waitmsg
+jmp ending
+find:
+mov eax,[obj+ebx].balance
+mwrite "YOUR CURRENT BALANCE IS : "
+Call writedec
+call crlf
+call waitmsg
+ending:
+call clrscr
+jmp customermenue
+call crlf
+ret
+balinq endp
+;  .............................................................................................
+;                                        WITHDRAW  procedure
+;...............................................................................................
+withdraw proc
+mwrite "RE-CONFIRM ACCOUNT NUMBER : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT LOGGING IN..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov esi,forloop
+mov counts,1
+search1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je find
+add counts,1
+add ebx,type customer
+cmp counts,esi
+jb search1
+cmp counts,esi
+je search1
+mwrite "YOU HAVE NO ACCOUNT !"
+CALL CRLF
+call waitmsg
+jmp ending
+find:
+mov eax,[obj+ebx].balance
+mwrite "YOUR CURRENT BALANCE IS : "
+Call writedec
+CALL CRLF
+mwrite "PLEASE WRITE AMOUNT WHICH YOU WANT TO WITHDRAW : "
+CALL readint
+mov sub1,eax
+mov  eax,[obj+ebx].balance
+.IF sub1>eax
+mwrite "You have not sufficient balance"
+call waitmsg
+.else
+sub eax,sub1
+mov  [obj+ebx].balance,eax
+mwrite "CASH WITHDRAWED, YOUR REMAINING BALANCE IS : "
+CALL writedec
+call crlf
+mwrite "Please	write the updated amount : "
+CALL CRLF
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].balance1
+call waitmsg
+CALL CRLF
+mov ebx,OFFSET caption3
+mov edx,OFFSET question3
+call MsgBoxAsk
+mov ebx,sample
+cmp eax,IDYES
+jne input	
+mov check,2
+call FILE
+.endif
+ending:
+input:
+jmp customermenue
+call crlf
+ret 
+withdraw endp
+;  .............................................................................................
+;                                        deposit  procedure
+;...............................................................................................
+deposit proc
+mwrite "ENTER THE ACCOUNT NUMBER FOR LOG IN  : "
+mreadstring information 
+call crlf
+mwrite "PLEASE WAIT LOGGING IN..."
+MOV EAX,1000
+call delay 
+call crlf
+mov ebx,0
+mov esi,forloop
+mov counts,1
+search1:
+INVOKE str_compare ,ADDR information ,ADDR [obj+ebx].accountno 
+je find
+add counts,0
+add ebx,type customer
+cmp counts,esi
+jb search1
+cmp counts,esi
+je search1
+mwrite "YOU HAVE NO ACCOUNT !"
+CALL CRLF
+call waitmsg
+jmp ending
+find:
+mov eax,[obj+ebx].balance
+mwrite "YOUR CURRENT BALANCE IS : "
+Call writedec
+CALL CRLF
+mwrite "PLEASE WRITE AMOUNT  WHICH YOU WANT TO dEPOSIT : "
+CALL readint
+CALL CRLF
+mov sub1,eax
+mov  eax,[obj+ebx].balance
+add eax,sub1
+mov  [obj+ebx].balance,eax
+mwrite "CASH DEPOSITED, YOUR CURRENT BALANCE IS : "
+CALL writedec
+call crlf
+mwrite "Please	write the updated amount : "
+mov edx, offset str1
+mov ecx,lengthof str1
+call readstring
+invoke str_copy,ADDR str1,ADDR [obj + ebx].balance1
+CALL CRLF
+call waitmsg
+CALL CRLF
+call clrscr
+mov ebx,OFFSET caption3
+mov edx,OFFSET question3
+call MsgBoxAsk
+mov ebx,sample
+cmp eax,IDYES
+jne input	
+mov check,2
+call FILE
+ending:
+input:
+jmp customermenue
+call crlf
+ret 
+ret 
+deposit endp
+;  .............................................................................................
+;                                        file handling  procedure
+;...............................................................................................
+FILE PROC
+mov ebx,0
+mov esi,forloop
+mov count,0
+call crlf
+mov edx,offset filename
+call createoutputfile
+mov data1,eax
+start2:
+cmp esi,count
+je output
+invoke str_copy , ADDR [obj+ebx].nam1,ADDR str1
+mov edx,offset str1
+mov eax,data1
+mov ecx,12
+call writetofile
+mov eax,data1
+mov edx,offset line
+mov eax,data1
+mov ecx,2
+call writetofile
+mov eax,data1
+invoke str_copy,ADDR [obj + ebx].accountno,ADDR information
+mov edx,offset information
+mov ecx,5
+call writetofile
+mov eax,data1
+mov edx,offset line
+mov eax,data1
+mov ecx,2
+call writetofile
+mov eax,data1
+invoke str_copy,ADDR [obj + ebx].mobile_no,ADDR information
+mov edx,offset information
+mov eax,data1
+mov ecx,11
+call writetofile
+mov eax,data1
+mov edx,offset line
+mov eax,data1
+mov ecx,2
+call writetofile
+mov eax,data1
+invoke str_copy , ADDR [obj+ebx].address,ADDR str1
+mov edx,offset str1
+mov eax,data1
+mov ecx,6
+call writetofile
+mov eax,data1
+mov edx,offset line
+mov eax,data1
+mov ecx,2
+call writetofile
+mov eax,data1
+invoke str_copy , ADDR [obj+ebx].balance1,ADDR str1
+mov edx,offset str1
+mov eax,data1
+mov ecx,5
+call writetofile
+mov eax,data1
+mov edx,offset line
+mov eax,data1
+mov ecx,2
+call writetofile
+mov eax,data1
+add ebx,type customer
+inc count
+call crlf
+mwrite "DATA SUCCESSFULY SAVED ON FILE !"
+call crlf
+jmp start2
+output:
+call waitmsg
+CALL CRLF
+CALL CLOSEFILE
+CALL CRLF
+.if check==2
+jmp customermenue
+CALL CRLF
+.else
+jmp usermenue
+CALL CRLF
+.endif
+call crlf
+RET
+FILE ENDP
+;  .............................................................................................
+;                                        main procedure
+;...............................................................................................
+main proc
+mwrite " _______________________________________________________________________________________"
+call crlf
+mwrite "|                            WELCOME TO BANK MANAGEMENT SYSTEM                          |"
+call crlf
+mwrite "|                              3rd SEMESTER BSCS-SECTION (C)                            |"
+call crlf
+mwrite "|                                    DEVELOPED  BY                                      |"
+call crlf
+mwrite "|                                  SYED MUHAMMAD AKMAL                                  |"
+call crlf
+mwrite "|                                     ABDULLAH ARFAN                                    |"
+call crlf
+mwrite "|                                     SYED ZAIN SHAH                                    |"
+call crlf
+mwrite "|                                    SYED AMJAD SHAH                                    |"
+CALL CRLF 
+mwrite "|                                      HAMZA MUNIR                                      |"
+CALL CRLF                                    
+mwrite "|_______________________________________________________________________________________|"
+call crlf
+CALL WAITMSG
+CALL CRLF
+CALL CLRSCR
+token1::                             ; token 1 for entering the main menu
+call mainmenu
+exitingprogram::
+d6::
+exit
+main endp
+end main
