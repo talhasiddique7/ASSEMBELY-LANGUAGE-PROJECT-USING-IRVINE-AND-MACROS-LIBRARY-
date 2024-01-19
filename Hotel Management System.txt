@@ -1,0 +1,341 @@
+include irvine32.inc
+include macros.inc
+
+buffer_Size = 1000			;it is a global variable
+.data
+record_file byte "Record_file.txt",0
+str1 byte "				***************************************    ",0dh,0ah,0
+str2 byte "					  Hotel Management System				",0dh,0ah,0
+str3 byte "				  	    * Main Menu *					",0dh,0ah,0
+str4 byte "				***************************************		",0dh,0ah,0
+str5 byte "          ",0dh,0		;space string
+str6 byte 0ah				;newline 
+				
+h_class dd 10		
+m_class dd 10			;total Room 30
+l_class dd 10
+
+				
+name_buffer byte buffer_Size dup(?)		; array for storing name
+name_buffer_size dd ?					; size of entered name
+no_Of_Days dd 0
+
+read_buffer byte buffer_Size dup(0)
+searchnamebufflength dd ?
+
+searchnamebuff byte buffer_Size dup(0)
+displaybuffer byte buffer_Size dup(0)
+
+Total_bill dd 0
+;_bill byte ?
+record_handler handle ?
+record_handler2 handle ?
+
+byteswritten dd ?
+byteswritten2 dd ?
+temp dd ?
+.code
+											;<-----Main Procedure Starts From Here----->
+main proc
+		
+		mov  eax,red+(green*16)
+        call SetTextColor
+		mov edx,offset record_file
+		call createoutputfile
+		mov record_handler,eax
+
+.repeat
+
+	call clrscr
+	call crlf
+	mov edx,offset str1
+	call writestring
+	mov edx,offset str2
+	call writestring
+	mov edx,offset str3
+	call writestring
+	mov edx,offset str4
+	call writestring
+
+mWrite "1. Enter to visit Hotel"
+call crlf
+mWrite "2. Enter to book a room"
+call crlf
+mWrite "3. Enter to Exite a loop"
+call crlf
+mWrite "Please Enter your choise..."
+call readdec
+
+.if eax==1
+	call clrscr
+
+	call visitHotel
+
+	call waitmsg
+	call crlf
+.elseif eax==2
+	call clrscr
+	call bookRoom
+	call crlf	
+.elseif eax==3
+jmp ext
+.else
+call clrscr
+mwrite "Invalid choise Select Again !!!!!!!!!!!"
+call waitmsg
+call clrscr
+
+.endif
+
+ext:
+.until eax==3
+
+mov eax,record_handler 
+call closefile
+call waitmsg
+CALL CRLF
+
+;call clrscr
+;call search
+;call waitmsg
+;call clrscr
+
+call clrscr
+mwrite"_____________________________________________________________________________"
+CALL CRLF
+CALL CRLF
+mwrite"NAME			PHONE NO		ID-CARD NO"					
+CALL CRLF
+mwrite"_____________________________________________________________________________"
+CALL CRLF
+
+call showData
+
+CALL CRLF
+mwrite"_____________________________________________________________________________"
+
+CALL CRLF
+exit
+main endp
+
+
+
+
+;<---------------------------------------visitHotel Function---------------------------------->
+ visitHotel proc
+	call crlf
+	mWrite "---------------------------------------"
+	call crlf
+	mWrite "    Type Of Available Rooms   "
+	call crlf
+	mWrite " Family Room		  :  "
+	mov eax,h_class
+	call writedec
+	call crlf
+	mWrite " Double Room		  :  "
+	mov eax,m_class
+	call writedec
+	call crlf
+	mWrite " Single Room		  :  "
+	mov eax,l_class
+	call writedec	
+	call crlf
+ret
+visitHotel endp
+
+bookRoom proc		;Booking Room Function
+
+	mWrite "--------------------------------------------------"
+	call crlf
+	mWrite "Please Enter Guest Name: "
+	mov ecx,buffer_Size				;total length of global variable
+	mov edx,offset name_buffer	
+	call readstring
+	mov name_buffer_size,eax		;length of name that I enter 
+	call crlf
+
+	mWrite "How many days Guest want to stay:    "
+	call readdec						
+	mov no_Of_Days,eax
+	call crlf
+again:
+	mWrite "Which Room  select for Guest to stay ? "
+	call crlf
+	mWrite "1. Family Room		  "
+	call crlf
+	mWrite "2. Double BedRoom	  "
+	call crlf
+	mWrite "3. Single Bedroom	  "
+	call crlf
+	mWrite "Enter your choise:   "
+	call readdec
+	
+	;mov esi,offset Total_bill
+
+	.if eax==1
+		mov ebx,10000
+		mov eax,no_Of_Days
+		mul ebx
+		mov Total_bill,eax
+		dec h_class			;total rooms are 10 so 1 decrimented of alloting
+
+	.elseif eax==2
+		mov ebx,8000
+		mov eax,no_Of_Days
+		mul ebx
+		mov Total_bill,eax
+		dec m_class			;total rooms are 10 so 1 decrimented of alloting
+		
+	.elseif eax==3
+		mov ebx,6000
+		mov eax,no_Of_Days
+		mul ebx
+		mov Total_bill,eax 
+		dec l_class			;total rooms are 10 so 1 decrimented of alloting
+	.else
+		mWrite "Invalid choise select Again !!!!!!!!!!!!!"
+		call crlf
+		jmp again
+	.endif
+		
+						;DISPLAYING TOTAL BILL
+		mWrite "Guest total bill calculated:  "
+		mov eax,Total_bill
+		call writedec
+		call crlf
+		mwrite "NOTE:  so after paying this bill your room will be Alloted "
+		call crlf
+
+		mov edx,offset name_buffer
+		mov ecx,name_buffer_size
+		mov eax,record_handler
+		call writetofile
+		add byteswritten,eax
+		
+		;create a text file
+		;mov edx,offset record_file
+		;call createoutputfile
+		;mov record_handler,eax
+
+		mov edx,offset str5		;space in file
+		mov ecx,10
+		mov eax,record_handler
+		call writetofile
+		add byteswritten,eax
+
+		;mov [edx],offset Total_bill		
+		;mov ecx,lengthof Total_bill
+		;mov ecx,sizeof Total_bill
+		;mov ecx,name_buffer_size
+		;mov ecx,4
+		;mov eax,record_handler
+		;call writetofile
+		;mov byteswritten,eax
+		
+		call crlf
+		mWrite "Enter Guest Contact No:  "
+		mov edx,offset name_buffer
+		mov ecx,buffer_Size
+		call readstring
+		mov name_buffer_size,eax
+
+		mov edx,offset name_buffer
+		mov ecx,name_buffer_size
+		mov eax,record_handler
+		call writetofile
+		add byteswritten,eax
+		call crlf
+
+		mov edx,offset str5		;space in file
+		mov ecx,10
+		mov eax,record_handler
+		call writetofile
+		add byteswritten,eax
+
+		call crlf
+		mWrite "Enter Guest ID Card No:  "
+		mov edx,offset name_buffer
+		mov ecx,buffer_Size
+		call readstring
+		mov name_buffer_size,eax
+
+		mov edx,offset name_buffer
+		mov ecx,name_buffer_size
+		mov eax,record_handler
+		call writetofile
+		add byteswritten,eax
+		call crlf
+
+		mov edx,offset str6		;newline string for file
+		mov ecx,1
+		mov eax,record_handler
+		call writetofile
+		add byteswritten,eax
+	ret
+	bookRoom endp
+
+	showData proc		;Data Showing Function
+		
+		mov edx,offset record_file
+		call openinputfile
+		mov record_handler2,eax
+		   
+		mov edx,offset read_buffer
+		mov ecx,buffer_Size
+		mov eax,record_handler2 
+		call readfromfile
+		mov byteswritten,eax 
+
+		mov edx,offset read_buffer
+		call writestring
+
+		mov eax,record_handler2
+		call closefile
+	ret
+		showData endp
+
+	search proc		;Search Function
+	call crlf 
+	mwrite " Enter the name you want to search:   "
+	mov ecx,buffer_size
+	mov edx,offset searchnamebuff
+	call readstring 
+	mov searchnamebufflength,eax
+	call crlf
+	mov edx,offset record_file
+	call openinputfile
+	mov record_handler,eax
+	mov edx,offset displaybuffer
+	mov ecx,buffer_size
+	call readfromfile
+	mov edx,offset displaybuffer
+	mov edi,offset searchnamebuff
+	mov ecx,1
+	l1:
+	MOV ebx,[edi]
+	add edi, type displaybuffer
+	add edx,type searchnamebuff
+	loop l1
+	mwrite "    Found!!!!!!     "
+	call crlf
+	mwrite " ____________________"
+	call crlf
+	mwrite "       Your  searched record      "
+	mov edx,offset displaybuffer
+	call writestring
+	call crlf
+	mwrite "  ------------------------------------   "
+	jmp m2
+	m1:
+	mov al,[edx]
+	call writechar
+	call crlf
+	call crlf
+	mwrite " invalid data   !!!!"
+	call crlf
+	call crlf
+	m2:
+	exit
+	ret
+	search endp
+end

@@ -1,0 +1,324 @@
+Project 
+Code
+:
+include irvine32.inc
+include macros.inc
+bufsize=500
+.data
+handler handle ?
+fname byte "heeeder.txt",0
+temperature dd ?
+converted dd ?
+result dd 100 dup(?)
+head byte 100 dup(?)
+ans dd 0
+.code
+header proc
+mov edx,offset fname
+call openinputfile
+mov handler,eax
+mov eax,handler
+mov edx,offset head
+mov ecx,bufsize
+call readfromfile
+mov edx,offset head
+call writestring
+ret
+header endp
+fartokal proc
+mov eax,temperature
+sub eax,32
+mov temperature,eax
+mov eax,9
+mov ebx,5
+mov edx,0
+div ebx
+mov ebx,temperature
+mul ebx
+add eax,273
+call crlf
+mwrite "Fahreheit to Kelvin = "
+mov [edi],eax
+add edi,type result
+inc ans
+call writeint
+mwrite "`K"
+call crlf
+ret
+fartokal endp
+fartocel proc
+mov eax,temperature
+sub eax,32
+4
+mov temperature,eax
+mov eax,9
+mov ebx,5
+mov edx,0
+div ebx
+mov ebx,temperature
+mul ebx
+call crlf
+mwrite "Fahreheit to celsius = "
+mov [edi],eax
+add edi,type result
+inc ans
+call writeint
+mwrite "`C"
+call crlf
+ret
+fartocel endp
+faren proc
+call header
+call crlf
+call crlf
+mwrite "Enter Your temperature in Farenheit = "
+call readint
+mov temperature,eax
+call crlf
+mwrite "Your temperature in Farenheit = "
+call writedec
+mwrite "`F"
+call crlf
+mwrite "Enter Choice You want to convert to "
+call crlf
+call crlf
+mwrite "1.To Celsius"
+call crlf
+mwrite "2.To Kelvin"
+call crlf
+call crlf
+mwrite "Enter Your Choice = "
+call readint
+cmp eax,1
+je l6
+cmp eax,2
+je l7
+l6:
+call fartocel
+jmp l8
+l7:
+call fartokal
+l8:
+ret
+faren endp
+caltofar proc
+mov eax,temperature
+sub eax,273
+mov ebx,2
+mul ebx
+5
+add eax,32
+call crlf
+mwrite "Kelvin to Farenheit = "
+mov [edi],eax
+add edi,type result
+inc ans
+call writeint
+mwrite "`F"
+ret
+caltofar endp
+kaltocel proc
+mov eax,temperature
+sub eax,273
+call crlf
+mwrite "Kelvin to Celsius = "
+mov [edi],eax
+add edi,type result
+inc ans
+call writeint
+mwrite "`C"
+call crlf
+ret
+kaltocel endp
+kelv proc
+call header
+call crlf
+call crlf
+mwrite "Enter Your temperature in kelvin = "
+call readint
+mov temperature,eax
+call crlf
+mwrite "Your temperature in kelvin = "
+call writedec
+mwrite "`K"
+call crlf
+mwrite "Enter Choice You want to convert to "
+call crlf
+call crlf
+mwrite "1.To Celsius"
+call crlf
+mwrite "2.To Farenheit"
+call crlf
+call crlf
+mwrite "Enter Your Choice = "
+call readint
+cmp eax,1
+je l3
+cmp eax,2
+je l4
+l3:
+call kaltocel
+jmp l5
+l4:
+call caltofar
+l5:
+ret
+6
+kelv endp
+celtokel proc
+mov eax,temperature
+add eax,273
+mov temperature,eax
+call crlf
+mwrite "Celsius to Kelvin = "
+mov [edi],eax
+add edi,type result
+inc ans
+call writeint
+mwrite "`K"
+ret
+celtokel endp
+celtofar proc
+;cel to f;c*(9/5)+32
+mov eax,9
+mov ebx,5
+mov edx,0
+div ebx
+mov ebx,temperature
+mul ebx
+add eax,32
+add eax,edx
+mov temperature,eax
+call crlf
+mwrite "Celsius to Fahrenheit = "
+mov [edi],eax
+add edi,type result
+inc ans
+call writeint
+mwrite "`F"
+ret
+celtofar endp
+cel proc
+call clrscr
+call header
+call crlf
+call crlf
+mwrite "Enter Your temperature in celslius = "
+call readint
+mov temperature,eax
+call crlf
+mwrite "Your temperature in celsius = "
+call writedec
+mwrite "`C"
+call crlf
+mwrite "Enter Choice You want to convert to "
+call crlf
+call crlf
+mwrite "1.To Fahrenheit"
+call crlf
+mwrite "2.To Kelvin"
+call crlf
+call crlf
+7
+mwrite "Enter Your Choice = "
+call readint
+cmp eax,1
+je l1
+cmp eax,2
+je l2
+l1:
+call celtofar
+jmp el
+l2:
+call celtokel
+el:
+ret
+cel endp
+menu proc
+call header
+call crlf
+call crlf
+mwrite "In which unit do you want to add temperature"
+call crlf
+call crlf
+mwrite "1.Celsius"
+call crlf
+mwrite "2.Fahrenheit"
+call crlf
+mwrite "3.Kelvin"
+call crlf
+mwrite "4.History"
+call crlf
+mwrite "5.Exit"
+call crlf
+call crlf
+mwrite "Enter your choice = "
+call readint
+ret
+menu endp
+;main procedure
+main proc
+mov edi,offset result
+start:
+call clrscr
+call menu
+cmp eax,1
+je celc
+cmp eax,2
+je farh
+cmp eax,3
+je kel
+cmp eax,4
+je e
+cmp eax,5
+jmp bye
+celc:
+call cel
+call crlf
+call waitmsg
+8
+jmp start
+farh:
+call clrscr
+call faren
+call crlf
+call waitmsg
+jmp start
+kel:
+call clrscr
+call kelv
+call crlf
+call waitmsg
+jmp start
+e:
+call clrscr
+call header
+call crlf
+mov ecx,ans
+mov edi,offset result
+l:
+mwrite "Your history is = "
+mov eax,[edi]
+call writeint
+add edi,type result
+call crlf
+loop l
+call waitmsg
+call clrscr
+jmp start
+bye:
+call closefile
+call crlf
+call clrscr
+call header
+call crlf
+call crlf
+call crlf
+mwrite "Thanks for using Program buddy !"
+call crlf
+call crlf
+exit
+main endp
+end main
+;just completing
+;275 lines hehe

@@ -1,0 +1,607 @@
+include irvine32.inc
+include macros.inc
+bsize=30
+.data
+total_bits dd ?
+book_id byte "book_id",0
+book_name byte "book_name",0   ;local
+book_price byte "book_price",0   ;local
+available_status byte "available_status",0  ;local
+file_name  byte "Library_Management.txt",0
+file_handler handle ? 
+buf_str byte bsize dup(?)
+line_len dd 0
+allignment byte " ",0
+line_end   byte " ",0dh,0ah,0
+avail_status byte "1",0
+books_to_add dd ?
+whole_data byte 1600 dup(?)
+search_var_1 dd 7
+search_var_2 dd ?
+exist dd 0
+borrow_record dd 0
+.code
+
+
+books_add proc
+push ebp
+mov ebp,esp
+mov edx,[ebp+8]
+call createoutputfile
+mov file_handler,eax
+mov esi,0
+mov edx,offset book_id
+mov ebx,sizeof book_id
+dec ebx
+mov ecx,ebx
+mov eax,file_handler
+call writetofile
+add esi,eax
+.while esi<bsize
+mov edx,offset allignment
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.endw
+add line_len,esi
+mov esi,0
+mov edx,offset book_name
+mov ebx, sizeof book_name
+dec ebx
+mov ecx,ebx
+mov eax,file_handler
+call writetofile
+add esi,eax
+.while esi<bsize
+mov edx,offset allignment
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.endw
+add line_len,esi
+mov esi,0
+mov edx,offset book_price
+mov ebx,sizeof book_price
+dec ebx
+mov ecx,ebx
+mov eax,file_handler
+call writetofile
+add esi,eax
+.while esi<bsize
+mov edx,offset allignment
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.endw
+add line_len,esi
+mov esi,0
+mov edx,offset available_status
+mov ebx,sizeof available_status
+dec ebx
+mov ecx,ebx
+mov eax,file_handler
+call writetofile
+add esi,eax
+.while esi<bsize
+mov edx,offset allignment
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.endw
+add line_len,esi
+mov edx,offset line_end
+mov ecx,3
+mov eax,file_handler
+call writetofile
+add line_len,eax
+mwrite "Books Addittion Procedure:"
+call crlf
+mwrite "How many books you are going to add: "
+call crlf
+call readint
+mov books_to_add ,eax
+mov edi,eax
+.while edi>0
+mwrite "write book_id and press [Entre]"
+call crlf
+mwrite "write book_name and press [Entre]"
+call crlf
+mwrite "write book_price and press [Entre]"
+call crlf
+mov ebx,0
+.while ebx<3
+mov edx,offset buf_str
+mov ecx,bsize
+call readstring
+mov esi,0
+mov edx,offset buf_str
+mov ecx,eax
+mov eax,file_handler
+call writetofile
+add esi,eax
+.while esi<bsize
+mov edx,offset allignment
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.endw
+inc ebx
+.endw
+mov esi,0
+mov edx,offset avail_status
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.while esi<bsize
+mov edx,offset allignment
+mov ecx,1
+mov eax,file_handler
+call writetofile
+add esi,eax
+.endw
+dec edi
+mov edx,offset line_end
+mov ecx,3
+mov eax,file_handler
+call writetofile
+.endw
+mov edx,[ebp+8]
+mov eax,file_handler
+call closefile
+mov eax,books_to_add
+call writedec
+mwrite " books have been added succesfully!"
+call crlf
+mov esp,ebp
+pop ebp
+ret
+books_add endp
+
+
+
+
+
+book_dell proc
+push ebp
+mov ebp,esp
+mov edi,offset whole_data
+add edi,line_len
+add edi,bsize
+mov ebx,0
+call crlf
+mwrite "available books are"
+call crlf
+mov edx,1
+.while ebx<books_to_add
+mov esi,edi
+mov ecx,0
+mov al,[esi]
+.if al!="-"
+mov eax,edx
+call writedec
+mov eax,":"
+call writechar
+.while ecx<bsize
+mov eax,[esi]
+call writechar
+inc ecx
+add esi,type whole_data
+.endw
+call crlf
+.endif
+add edi,line_len
+inc ebx
+inc edx
+.endw
+mwrite "select book you want to delete by entring number corresponding to that book:"
+call readint
+mov ebx,1
+mov esi,offset whole_data
+.if eax<=books_to_add
+.while ebx<=eax
+add esi,line_len
+inc ebx
+.endw
+mov eax,0
+mov bl,"-"
+.if [esi]!=bl
+.while eax<120
+mov bl,"-"
+mov [esi],bl
+add esi,type whole_data
+inc eax
+.endw
+mwrite "deleted successfully"
+.else
+mwrite "entre a valid option"
+.endif
+mov edx,offset file_name
+call createoutputfile
+mov file_handler,eax
+mov edx,offset whole_data
+mov ecx,total_bits
+mov eax,file_handler
+call writetofile
+mov edx,offset file_name
+mov eax,file_handler
+call closefile
+.else
+mwrite "select a valid option"
+.endif
+call crlf
+mov esp,ebp
+pop ebp
+ret
+book_dell endp
+
+
+
+
+
+display_all proc
+push ebp
+mov ebp,esp
+mov edx,offset whole_data
+call writestring
+mov esp,ebp
+pop ebp
+ret
+display_all endp
+
+
+
+
+
+borrow_books proc
+push ebp
+mov ebp,esp
+mov edi,offset whole_data
+add edi,line_len
+add edi,bsize
+mov ebx,0
+call crlf
+mwrite "available id-s are"
+call crlf
+mov edx,0
+.while ebx<books_to_add
+mov al,"1"
+mov esi,edi
+inc edx
+add esi,bsize
+add esi,bsize
+.if [esi] == al
+mov eax,edx
+call writedec
+mov eax,":"
+call writechar
+mov esi,edi
+mov ecx,0
+.while ecx<bsize
+mov eax,[esi]
+call writechar
+inc ecx
+add esi,type whole_data
+.endw
+call crlf
+.endif
+inc ebx
+add edi,line_len
+.endw
+mwrite "select book by entring num corresponding to that id"
+call readint
+.if eax<=books_to_add
+mov ebx,1
+mov esi,offset whole_data
+.while ebx<=eax
+add esi,line_len
+inc ebx
+.endw
+add esi,bsize
+add esi,bsize
+add esi,bsize
+mov al,"1"
+.if [esi]==al
+mov al,"0"
+mov [esi],al
+mwrite "issued successfully!"
+inc borrow_record
+call crlf
+.else
+mwrite "Entre a valid number."
+call crlf
+.endif
+.else
+mwrite "entre a valid number"
+call crlf
+.endif
+mov edx,offset file_name
+call createoutputfile
+mov file_handler,eax
+mov edx,offset whole_data
+mov ecx,total_bits
+mov eax,file_handler
+call writetofile
+mov edx,offset file_name
+mov eax,file_handler
+call closefile
+pop ebp
+ret
+borrow_books endp
+
+
+
+
+
+display_borrowed_books proc
+push ebp
+mov ebp,esp
+mov edi,offset whole_data
+mov ebx,0
+.while ebx<line_len
+mov al,[edi]
+call writechar
+add edi,type whole_data
+inc ebx
+.endw
+mov edi,offset whole_data
+add edi,bsize
+add edi,line_len
+mov ebx,0
+.while ebx<books_to_add
+mov al,"0"
+mov esi,edi
+add esi,bsize
+add esi,bsize
+.if [esi] == al
+mov esi,edi
+mov ecx,0
+sub esi,bsize
+.while ecx<120
+mov eax,[esi]
+call writechar
+inc ecx
+add esi,type whole_data
+.endw
+.endif
+inc ebx
+add edi,line_len
+.endw
+mov esp,ebp
+pop ebp
+ret
+display_borrowed_books endp
+
+
+
+
+book_return proc
+push ebp
+mov ebp,esp
+mov edi,offset whole_data
+add edi,bsize
+add edi,line_len
+mov ebx,0
+call crlf
+mwrite "borrowed_books_id-s are"
+call crlf
+mov edx,0
+.while ebx<books_to_add
+mov al,"0"
+mov esi,edi
+inc edx
+add esi,bsize
+add esi,bsize
+.if [esi] == al
+mov eax,edx
+call writedec
+mov eax,":"
+call writechar
+mov esi,edi
+mov ecx,0
+.while ecx<bsize
+mov eax,[esi]
+call writechar
+inc ecx
+add esi,type whole_data
+.endw
+call crlf
+.endif
+inc ebx
+add edi,line_len
+.endw
+mwrite "select book you are returning by entring num corresponding to that id"
+call readint
+.if eax<=books_to_add
+mov ebx,1
+mov esi,offset whole_data
+.while ebx<=eax
+add esi,line_len
+inc ebx
+.endw
+add esi,bsize
+add esi,bsize
+add esi,bsize
+mov al,"0"
+.if [esi]==al
+mov al,"1"
+mov [esi],al
+mwrite "returned successfully"
+dec borrow_record
+call crlf
+mov edx,offset file_name
+call createoutputfile
+mov file_handler,eax
+mov edx,offset whole_data
+mov ecx,total_bits
+mov eax,file_handler
+call writetofile
+mov edx,offset file_name
+mov eax,file_handler
+call closefile
+.else
+mwrite "select a valid option"
+call crlf
+.endif
+.else
+mwrite "select a valid option"
+call crlf
+.endif
+pop ebp
+ret
+book_return endp
+
+
+
+
+
+book_search proc
+push ebp
+mov ebp,esp
+mov edx,offset buf_str
+mov ecx,bsize
+mwrite "entre book name you wanna search: "
+call readstring
+mov edx,offset buf_str
+add edx,eax
+mov bl,allignment
+mov [edx],bl
+inc eax
+mov edx,offset buf_str
+add edx,eax
+mov bl,allignment
+mov [edx],bl
+inc eax
+mov ebx,0
+mov edi,offset whole_data
+add edi,line_len
+add edi,bsize
+mov exist,0
+.while ebx< books_to_add
+mov esi,edi
+mov edx,offset buf_str
+mov search_var_1,0
+mov search_var_2,0
+.while search_var_1<eax
+mov cl,[esi]
+.if cl==[edx]
+inc search_var_2
+.endif
+add esi,type whole_data
+add edx,type buf_str
+inc search_var_1
+.endw
+.if eax == search_var_2
+mwrite "yes! exist"
+call crlf
+.else
+inc exist
+.endif
+add edi,line_len
+inc ebx
+.endw
+mov eax,exist
+.if eax == books_to_add
+mwrite "do not exist"
+call crlf
+.endif
+mov esp,ebp
+pop ebp
+ret
+book_search endp
+
+
+
+
+read_data proc
+push ebp
+mov ebp,esp
+mov edx,offset file_name
+call openinputfile
+mov file_handler,eax
+mov edx,offset whole_data
+mov ecx,sizeof whole_data
+mov eax,file_handler
+call readfromfile
+mov total_bits,eax
+mov edx,offset file_name
+mov eax,file_handler
+call closefile
+mov esp,ebp
+pop ebp
+ret
+read_data endp
+
+
+
+
+
+main proc
+mwrite "::::::::::::::::::::::::::::::::::::::::::::::::::::"
+call crlf
+mwrite "          Welocome to QUAID-E-AZAM library          "
+call crlf
+mwrite "::::::::::::::::::::::::::::::::::::::::::::::::::::"
+call crlf
+push offset file_name
+call books_add
+call read_data
+l1:
+mwrite "select operation by entring number correspondibg to that operation:"
+call crlf
+mwrite "1:Search any book"
+call crlf
+mwrite "2:Delete a book from library"
+call crlf
+mwrite "3:Display all books of library"
+call crlf
+mwrite "4:Borrow a book from library"
+call crlf
+.if borrow_record>0
+mwrite "5:Return borrowed book to library"
+call crlf
+mwrite "6:Display all borrowed_books"
+call crlf
+.endif
+mwrite "7:exit"
+call crlf
+mwrite "Entre number: "
+call readint
+.if eax==1
+call book_search
+.elseif eax==2
+call book_dell
+.elseif eax==3
+call display_all
+.elseif eax==4
+call borrow_books
+.elseif eax==5
+.if borrow_record>0
+call book_return
+.else
+mwrite "Entre a valid number."
+call crlf
+.endif
+.elseif eax==6
+.if borrow_record>0
+call display_borrowed_books
+.else
+mwrite "Entre a valid option."
+call crlf
+.endif
+.elseif eax==7
+exit
+.else
+mwrite "Entre a valid number."
+call crlf
+.endif
+jmp l1
+main endp
+end main
+
+

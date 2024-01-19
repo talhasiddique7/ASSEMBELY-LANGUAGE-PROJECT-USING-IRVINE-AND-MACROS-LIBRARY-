@@ -1,0 +1,186 @@
+; now enter quantity
+
+include irvine32.inc
+
+bsize = 150
+
+.data
+; bill name of file
+bill byte "bill.txt",0
+
+; products with their prices
+	football_price dd 1800
+	bat_price    DD 4500
+	hockey_price DD 3000
+	racket_price DD 2800
+	ball_price   DD 300
+
+f1 Handle ?
+nline byte " ",0dh,0ah,0
+v1 dd ?
+arr byte bsize dup(?)
+
+
+total_price DD ?
+
+MESSAGE BYTE "||||||||||||||||||||||||||| WELCOME TO SPORTS MARKET |||||||||||||||||||||||||||",0
+
+ONE   BYTE   "	Enter 1 to select FOOTBALL ",0
+TWO   BYTE   "	Enter 2 to select BAT      ",0
+THREE BYTE   "	Enter 3 to Select HOCKEY   ",0
+FOUR  BYTE   "	Enter 4 to Select RACKET   ",0
+FIVE  BYTE   "	Enter 5 to Select BALL     ",0
+
+select  BYTE   "SELECT --> ",0
+valid     BYTE   "PLEASE ENTER A VALID NUMBER BETWEEN 1-6 ",0
+continue  BYTE   "DO YOU WANT TO CONTINUE?",0
+PRESS	  BYTE   "PRESS 1 TO CONTINUE: ",0	
+
+SelectQuantity	  BYTE   "Select Quantity: ",0	
+
+totalBill	  BYTE   "NET BILL : ",0	
+
+discount	  BYTE   "ENTER 1 TO GIVE 15 % DISCOUNT : ",0	
+
+
+.code
+
+								;LIST function starts
+LIST PROC
+
+mov edx,offset one
+call writeString
+call crlf
+
+mov edx,offset two
+call writeString
+call crlf
+
+mov edx,offset three
+call writeString
+call crlf
+
+mov edx,offset four
+call writeString
+call crlf
+
+mov edx,offset five
+call writeString
+call crlf
+
+call crlf 
+
+mov edx,offset select
+call writeString
+
+ret
+LIST ENDP
+
+														;LIST function ends
+
+main Proc
+
+mov edx , offset bill
+ call createoutputfile
+
+
+
+mov edx, offset message
+CALL writestring
+call crlf
+
+mov ebx,1
+.repeat
+call LIST
+call readdec
+.if(eax == 1)
+
+			mov edx, offset selectQuantity
+			call writeString
+			call readdec
+			mov ebx, football_price
+			mul ebx
+			mov total_price , ebx
+			mov edx, offset totalBill
+			call writeString
+			call writedec
+
+
+.elseif(eax == 2)
+			mov edx, offset selectQuantity
+			call writeString
+			call readdec
+			mov ebx, bat_price
+			mul ebx
+			mov total_price , ebx
+			mov edx, offset totalBill
+			call writeString
+			call writedec
+.elseif(eax == 3)
+			mov edx, offset selectQuantity
+			call writeString
+			call readdec
+			mov ebx, hockey_price
+			mul ebx
+			mov total_price , ebx
+			mov edx, offset totalBill
+			call writeString
+			call writedec
+.elseif(eax == 4)
+			mov edx, offset selectQuantity
+			call writeString
+			call readdec
+			mov ebx, racket_price
+			mul ebx
+			mov total_price , ebx
+			mov edx, offset totalBill
+			call writeString
+			call writedec
+.elseif(eax == 5)
+			mov edx, offset selectQuantity
+			call writeString
+			call readdec
+			mov ebx, ball_price
+			mul ebx
+			mov total_price , ebx
+			mov edx, offset totalBill
+			call writeString
+			call writedec
+.elseif(eax > 5)
+mov edx, offset valid
+call writestring
+call writedec
+.endif
+call crlf
+mov edx, offset continue
+call writestring
+call crlf
+mov edx, offset press
+call writestring
+call readdec
+call crlf
+mov ebx, eax
+.until(ebx != 1)
+
+mov total_price, eax
+
+
+; discount
+mov edx, offset discount
+call writestring
+call readint
+.if(eax == 1)
+;mov eax, total_price
+mov eax ,1000
+mov ebx , 15400
+div ebx
+call writedec
+call crlf
+.endif
+
+
+
+
+exit 
+main endp
+end

@@ -1,0 +1,574 @@
+include irvine32.inc
+include macros.inc
+Fruitsize=500
+Scoresize =101
+.data
+tmp byte "--------------------------------------------",0
+wlc BYTE  "   <<<<  WELCOME IN PUZZLE GAME  >>>>>",0
+choice11 byte "         Press 1:      For Help",0
+choice22 byte "         Press 2:      To Start The Game",0
+choice44 byte "         Press 3:      For Exit",0
+fruit1 dword 'g','u','a','v','a'
+fruit11 dword 'v','a','g','u','a'
+fruit2 dword 'o','r','a','n','g','e'
+fruit22 dword 'a','o','r','e','n','g'
+fruit3 dword 'b','a','n','a','n','a'
+fruit33 dword 'a','n','n','b','a','a'
+fruit4 dword 'p','a','p','a','y','a'
+fruit44 dword 'a','p','y','a','p','a'
+fruit5 dword 'k','i','w','i'
+fruit55 dword 'i','k','w','i'
+entr byte "Try To Enter Correct Spellings: ",0
+final_msg byte  "         <<<<  RESULT BOARD >>>>",0
+try_again byte  "       '''''BETTER LUCK NEXT TIME'''''",0
+well byte       "       '''''WELL PLAYED'''''",0
+congrat byte    "       '''''CONGRATULATIONS'''''",0
+score_msg byte  "        Your Current Score are 0.",0
+score_msg2 byte "        Your Current Scores are 2.",0
+score_msg4 byte "        Your Current Scores are 4.",0
+score_msg6 byte "        Your Current Scores are 6.",0
+score_msg8 byte "        Your Current Scores are 8.",0
+score_msg10 byte "       Your Current Scores are 10.",0
+win_msg byte "Correct!  Your Current Score is:",0
+lose_msg byte "Wrong!  Your Current Score is:",0
+Go_back byte "Press 1 :   To Go Back To Main Menu",0
+exitt  byte  "Press 2 :   For Exit",0
+thanx byte "     <<<< THANKS FOR PLAYING >>>>",0
+
+usr1 dword 5 dup(?)
+usr2 dword 6 dup(?)
+usr3 dword 4 dup(?)
+result dword 0
+score dword 0
+
+filename byte "rules.txt", 0
+filehandle HANDLE ?
+info BYTE sizeof Fruitsize DUP(?)
+byteswritten dd ?
+filename1 byte "score.txt",0
+filehandle1 HANDLE ?
+scorearr BYTE sizeof Scoresize DUP(?)
+
+.code
+main proc
+mov edx,offset filename1
+call createoutputfile
+mov filehandle1,eax
+mov edx,offset wlc
+call writestring
+call crlf
+call crlf
+main endp
+
+;procedure for game levels
+
+puzzle proc
+call clrscr
+mov edx,offset wlc
+call writestring
+call crlf
+call crlf
+
+mov edx,offset choice11
+call writestring
+call crlf
+mov edx,offset choice22
+call writestring
+call crlf
+
+mov edx,offset choice44
+call writestring
+call crlf
+call readint
+cmp eax,1
+je roles
+cmp eax,2
+je start
+cmp eax,3
+je r3
+
+r3:
+call exitprocess
+
+roles:
+call clrscr
+
+; read from file
+mov edx,offset filename
+call OpenInputFile
+mov filehandle,eax
+mov edx,offset info
+mov ecx,Fruitsize
+call ReadFromFile
+mov edx,offset info
+call writestring
+mov eax,filehandle
+call CloseFile
+call crlf
+call crlf
+
+
+call crlf
+call crlf 
+call crlf
+mov edx,offset Go_back
+call writestring
+call readint
+call crlf
+cmp eax,1
+je mn1
+
+mn1:
+call main
+
+start:
+call clrscr
+
+mov edx,offset entr
+call writestring
+call crlf
+mov esi,offset fruit11
+mov ecx,lengthof fruit11
+
+l1:
+mov eax,[esi]
+call writechar
+add esi,type fruit11
+loop l1
+call crlf
+mov esi,offset usr1
+mov ecx,lengthof usr1
+l11:
+call readchar
+call writechar
+mov [esi],eax
+add esi,type fruit1
+loop l11
+mov esi,offset fruit1
+mov ebp,offset usr1
+mov ecx,lengthof fruit1
+l111:
+mov al,[esi]
+cmp al,[ebp]
+je eql
+jne lose1
+eql:
+inc result
+add esi,type fruit1
+add ebp,type usr1
+loop l111
+mov eax,result
+cmp eax,5
+je win1
+jne lose1
+
+win1:
+call clrscr
+call crlf
+add score,2
+call crlf
+mov edx,offset win_msg
+call writestring
+mov eax,score
+call writedec
+jmp wrd2
+lose1:
+call clrscr
+call crlf
+mov edx,offset lose_msg
+call writestring
+mov eax,score
+call writedec
+
+wrd2:
+mov result,0
+call crlf
+mov edx,offset entr
+call writestring
+call crlf
+mov esi,0
+mov esi,offset fruit22
+mov ecx,lengthof fruit22
+l2:
+mov eax,[esi]
+call writechar
+add esi,type fruit22
+loop l2
+call crlf
+mov esi,offset usr2
+mov ecx,lengthof usr2
+l22:
+call readchar
+call writechar
+mov [esi],eax
+add esi,type fruit2
+loop l22
+mov esi,offset fruit2
+mov ebp,offset usr2
+mov ecx,lengthof fruit2
+l222:
+mov al,[esi]
+cmp al,[ebp]
+je eql2
+jne lose2
+eql2:
+inc result
+add esi,type fruit2
+add ebp,type usr2
+loop l222
+mov eax,result
+cmp eax,6
+je win2
+jne lose2
+win2:
+call clrscr
+call crlf
+add score,2
+mov edx,offset win_msg
+call writestring
+call crlf
+mov eax,score
+call writedec
+jmp wrd3
+lose2:
+call clrscr
+call crlf
+mov edx,offset lose_msg
+call writestring
+call crlf
+mov eax,score
+call writedec
+
+wrd3:
+mov result,0
+call crlf
+mov usr2,0
+mov edx,offset entr
+call writestring
+call crlf
+mov esi,offset fruit33
+mov ecx,lengthof fruit33
+l3:
+mov eax,[esi]
+call writechar
+add esi,type fruit33
+loop l3
+call crlf
+mov esi,offset usr2
+mov ecx,lengthof usr2
+l33:
+call readchar
+call writechar
+mov [esi],eax
+add esi,type fruit3
+loop l33
+mov esi,offset fruit3
+mov ebp,offset usr2
+mov ecx,lengthof fruit3
+l333:
+mov al,[esi]
+cmp al,[ebp]
+je eql3
+jne lose3
+eql3:
+inc result
+add esi,type fruit3
+add ebp,type usr2
+loop l333
+mov eax,result
+cmp eax,6
+je win3
+jne lose3
+win3:
+call clrscr
+call crlf
+add score,2
+mov edx,offset win_msg
+call writestring
+mov eax,score
+call writedec
+jmp wrd4
+lose3:
+call crlf
+call clrscr
+mov edx,offset lose_msg
+call writestring
+mov eax,score
+call writedec
+
+wrd4:
+call crlf
+mov usr2,0
+mov result,0
+mov edx,offset entr
+call writestring
+call crlf
+mov esi,offset fruit44
+mov ecx,lengthof fruit44
+l4:
+mov eax,[esi]
+call writechar
+add esi,type fruit44
+loop l4
+call crlf
+mov esi,offset usr2
+mov ecx,lengthof usr2
+l44:
+call readchar
+call writechar
+mov [esi],eax
+add esi,type fruit4
+loop l44
+mov esi,offset fruit4
+mov ebp,offset usr2
+mov ecx,lengthof fruit4
+l444:
+mov al,[esi]
+cmp al,[ebp]
+je eql4
+jne lose4
+eql4:
+inc result
+add esi,type fruit4
+add ebp,type usr2
+loop l444
+mov eax,result
+cmp eax,6
+je win4
+jne lose4
+win4:
+call clrscr
+call crlf
+add score,2
+mov edx,offset win_msg
+call writestring
+mov eax,score
+call writeint
+jmp wrd5
+lose4:
+call clrscr
+call crlf
+mov edx,offset lose_msg
+call writestring
+mov eax,score
+call writeint
+
+wrd5:
+call crlf
+mov result,0
+mov usr3,0
+mov edx,offset entr
+call writestring
+call crlf
+mov esi,offset fruit55
+mov ecx,lengthof fruit55
+l5:
+mov eax,[esi]
+call writechar
+add esi,type fruit55
+loop l5
+call crlf
+mov esi,offset usr3
+mov ecx,lengthof usr3
+l55:
+call readchar
+call writechar
+mov [esi],eax
+add esi,type fruit5
+loop l55
+mov esi,offset fruit5
+mov ebp,offset usr3
+mov ecx,lengthof fruit5
+l555:
+mov al,[esi]
+cmp al,[ebp]
+je eql5
+jne lose5
+eql5:
+inc result
+add esi,type fruit5
+add ebp,type usr3
+loop l555
+mov eax,result
+cmp eax,4
+je win5
+jne lose5
+win5:
+call clrscr
+call crlf
+add score,2
+mov edx,offset final_msg
+call writestring
+mov eax,score
+
+
+
+jmp op
+lose5:
+call clrscr
+call crlf
+mov edx,offset final_msg
+call writestring
+call crlf 
+call crlf
+mov eax,score
+
+
+op:
+call total_score
+call crlf
+
+mov edx,offset Go_back
+call writestring
+call crlf
+
+mov edx,offset exitt
+call writestring
+call crlf
+
+
+call readint
+cmp eax,1
+je c2
+
+cmp eax,2
+je c3
+
+c3:
+mov edx , offset thanx
+call writestring
+ call exitprocess
+c2:
+call main
+
+puzzle endp
+
+total_score proc 
+      cmp score,0
+      je score0
+      cmp score,2
+      je score2
+      cmp score,4
+      je score4
+     cmp score,6
+      je score6
+      cmp score,8
+      je score8
+      cmp score,10
+      je score10
+      jmp back
+
+      score0:
+          call crlf
+          mov eax,filehandle1
+          
+          call crlf
+          mov edx,offset try_again
+          call writestring
+          call crlf
+          mov edx,offset score_msg
+          call writestring
+          mov ecx,sizeof score_msg
+          call writetofile
+          mov eax,filehandle1
+          call closeFile
+          call crlf
+          call crlf
+          jmp back
+      
+      score2:
+           call crlf
+          mov eax,filehandle1
+          call crlf
+          call crlf
+          mov edx,offset try_again
+          call writestring
+          call crlf
+          mov edx,offset score_msg2
+          call writestring
+          
+          mov ecx,sizeof score_msg2
+          call writetofile
+          mov eax,filehandle1
+          call closeFile
+          call crlf
+          call crlf
+          jmp back
+      
+      score4:
+          call crlf
+          mov eax,filehandle1
+          call crlf
+          call crlf
+          mov edx,offset try_again
+          call writestring
+          call crlf
+          mov edx,offset score_msg4
+          call writestring
+          
+          mov ecx,sizeof score_msg4
+          call writetofile
+          mov eax,filehandle1
+          call closeFile
+          call crlf
+          call crlf
+          jmp back
+
+     score6:
+          call crlf
+          mov eax,filehandle1
+          call crlf
+          call crlf
+          mov edx,offset well
+          call writestring
+          call crlf
+          mov edx,offset score_msg6
+          call writestring
+          
+          mov ecx,sizeof score_msg6
+          call writetofile
+          mov eax,filehandle1
+          call closeFile
+          call crlf
+          call crlf
+          jmp back
+          
+    score8:
+           call crlf
+          mov eax,filehandle1
+          call crlf
+          call crlf
+          mov edx,offset well
+          call writestring
+          call crlf
+          mov edx,offset score_msg8
+          call writestring
+          mov ecx,sizeof score_msg8
+          call writetofile
+          mov eax,filehandle1
+          call closeFile
+          call crlf
+          call crlf
+          jmp back
+
+    score10:
+          call crlf
+          mov eax,filehandle1
+          call crlf
+          call crlf
+          mov edx,offset congrat
+          call writestring
+          call crlf
+          mov edx,offset score_msg10
+          call writestring
+          mov ecx,sizeof score_msg10
+          call writetofile
+          mov eax,filehandle1
+          call closeFile
+          call crlf
+          call crlf
+          jmp back
+back:
+ret
+total_score endp
+end main

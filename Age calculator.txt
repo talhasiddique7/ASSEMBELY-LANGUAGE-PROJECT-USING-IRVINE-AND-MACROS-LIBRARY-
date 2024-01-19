@@ -1,0 +1,226 @@
+Group no 8 
+Roll 139,165,177,186
+Project:Age calculator
+coal project
+
+include irvine32.inc
+.data 
+cmonth dd ?
+bmonth dd ?
+bdate dd ?
+cdate dd ?
+byear dd ?
+cyear dd ?
+y dd ?
+m dd ?
+d dd ?
+nam dd 200 DUP(?)
+arr dd 31,28,31,30,31,30,31,31,30,31,30,31
+
+t byte "****** WELL COME TO THIS PROGRAM ******** ",0
+t1 byte " This program is specially make to calculate age of peoples ",0
+
+msg0 byte "Enter your details for finding age :  ",0
+msg byte "Enter your birth month ",0
+msg1 byte "Enter a current month ",0
+
+msg2 byte "Enter your birth date ",0
+msg3 byte "Enter a current date ",0
+
+msg4 byte "Enter your birth year ",0
+msg5 byte "Enter a current year ",0
+
+z byte "Enter your name : ",0
+str1 byte "  Now you are ",0
+str2 byte " years ",0
+str3 byte " months and ",0
+str4 byte " days old ",0
+str5 byte " Dear  ",0
+.code
+
+input proc
+
+mov edx,offset msg
+call writestring
+call crlf
+call readint
+mov bmonth,eax
+
+mov edx,offset msg1
+call writestring
+call crlf
+call readint
+mov cmonth,eax
+
+mov edx,offset msg2
+call writestring
+call crlf
+call readint
+mov bdate,eax
+
+mov edx,offset msg3
+call writestring
+call crlf
+call readint
+mov cdate,eax
+
+mov edx,offset msg4
+call writestring
+call crlf
+call readint
+mov byear,eax
+
+mov edx,offset msg5
+call writestring
+call crlf
+call readint
+mov cyear,eax
+ret
+input endp
+
+
+year proc
+mov ebx,cyear
+
+sub ebx,byear
+mov y,ebx
+
+mov ebx,cmonth
+cmp ebx,bmonth
+jl l
+jmp e
+l:
+mov ebx,y
+sub ebx,1
+mov y ,ebx
+e:
+ret
+year endp
+
+
+month proc
+mov ebx,cmonth
+cmp ebx,bmonth
+jl l
+sub ebx,bmonth
+mov m,ebx
+
+jmp e
+l:
+mov edx,12
+sub edx,bmonth
+mov eax,edx
+add eax,ebx
+mov m,eax
+
+mov edx,cdate
+cmp edx,bdate
+jl l1
+jmp e
+l1:
+mov eax,m
+sub eax,1
+mov m,eax
+
+
+e:
+
+ret
+month endp
+
+
+date proc
+mov edx,cdate
+cmp edx,bdate
+jl l1
+sub edx,bdate
+mov d,edx
+jmp e
+l1:
+mov eax,0
+mov edi,offset arr
+mov eax,size arr
+mov ebx,bmonth
+mul ebx
+mov ebx,[edi+eax]
+sub ebx,bdate
+add ebx,cdate
+mov d,ebx
+e:
+ret 
+date endp
+
+
+
+display proc
+mov edx,offset nam
+call writestring
+mov eax,0
+mov eax,y
+mov edx,offset str1
+call writestring
+call writedec
+mov edx,offset str2
+call writestring
+mov eax,m
+call writedec
+
+mov edx,offset str3
+call writestring
+mov eax,d
+call writedec
+
+mov edx,offset str4
+call writestring
+call crlf
+call crlf
+ret
+display endp
+
+
+main proc
+
+mov edx,offset t
+call writestring
+call crlf
+call crlf
+call crlf
+
+mov edx,offset t1
+call writestring
+call crlf
+call crlf
+
+mov edx,offset msg0
+call writestring 
+call crlf
+
+mov edx,offset z
+call writestring
+call crlf
+mov ecx,200
+mov edx,offset nam
+call readstring
+mov nam,eax
+mov edi,offset nam
+call writestring
+
+call crlf
+
+
+call input
+call crlf
+call month
+call crlf
+call date
+call crlf
+call year
+call crlf
+mov edx,offset str5
+call writestring
+call display
+call crlf
+
+exit
+main endp
+end main

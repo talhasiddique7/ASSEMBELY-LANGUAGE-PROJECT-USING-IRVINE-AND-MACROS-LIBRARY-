@@ -1,0 +1,825 @@
+
+
+Coal project car showroom management system 
+include Irvine32.inc
+Bsize = 10000
+.data
+
+str0 byte "=================================================================================================================================",0
+str1 byte "		  --> Enter your name:  ",0
+str2 byte "		  --> Enter your Father name:   ",0
+str3 byte "		  --> Enter your phone number:   ",0
+str4 byte "		  --> Enter your CNIC number:    ",0
+str5 byte "	  Sir if you want that car at your home (Delivery Charges will be applied according to route) then enter 1 and provide information about yourself....",0
+str6 byte "		  Enter your address:     ",0
+str7 byte "    OK sir we will deliver your car at you home......",0
+str8 byte "    Sir if you can give us payment by account then enter 1 elseif you want to pay by check then enter any digit...",0
+str9 byte "             ----Sir here is detail of our showroom give us payment and take your car",0
+str10 byte "                           --> our Account Title is: SOFI Showroom ",0
+str11 byte "                           --> our Account no is: 1253456478791011 ",0
+str12 byte "                           --> Bank Name is: Habib Bank Limited (HBL) ",0
+msg1 byte "   Sir enter serial no of company from which you want cars: ",0
+msg2 byte "   Sir enter serial no of car which you want to buy......   ",0
+msg3 byte "           .....Sir please enter correct Serial no.... ",0
+msg4 byte "   Sir if you want to again see another car then enter 1 elseif you want to buy that car so enter another digit........",0
+msg5 byte " ....Thanks  for comming Mr:         ",0
+msg6 byte "   Sir if you want more car then enter 1 else if you want just one car then enter another digit....",0
+msg7 byte "   OK Sir Your Car will be deliverd at this address.....   ",0
+msg8 byte "                                                    ",0
+s1 byte "F1.txt",0              ;used to name the files
+s2 byte "F2.txt",0
+s3 byte "F3.txt",0
+s4 byte "F4.txt",0
+s5 byte "F5.txt",0
+s6 byte "F6.txt",0
+s7 byte "F7.txt",0
+s8 byte "F8.txt",0
+s9 byte "F9.txt",0
+s10 byte "F10.txt",0
+s11 byte "F11.txt",0
+s12 byte "F12.txt",0
+s13 byte "F13.txt",0
+s14 byte "F15.txt",0
+s15 byte "F16.txt",0
+s16 byte "F17.txt",0
+s17 byte "F18.txt",0
+s18 byte "F19.txt",0
+s19 byte "F20.txt",0
+s20 byte "F21.txt",0
+s21 byte "F22.txt",0
+s22 byte "F23.txt",0
+h HANDLE ?              ;used to give path of file for read/write int and read/write string
+h1 HANDLE ?
+h2 HANDLE ?
+h3 HANDLE ?
+h4 HANDLE ?
+h5 HANDLE ?
+h6 HANDLE ?
+h7 HANDLE ?
+h8 HANDLE ?
+h9 HANDLE ?
+h10 HANDLE ?
+h11 HANDLE ?
+h12 HANDLE ?
+h13 HANDLE ?
+h14 HANDLE ?
+h15 HANDLE ?
+h16 HANDLE ?
+h17 HANDLE ?
+h18 HANDLE ?
+h19 HANDLE ?
+h20 HANDLE ?
+h21 HANDLE ?
+a1 byte Bsize DUP(?)        ;used to store data in this array/string for for read/write int and read/write string
+a2 byte Bsize DUP(?)
+a3 byte Bsize DUP(?)
+a4 byte Bsize DUP(?)
+a5 byte Bsize DUP(?)
+a6 byte Bsize DUP(?)
+a7 byte Bsize DUP(?)
+a8 byte Bsize DUP(?)
+a9 byte Bsize DUP(?)
+a10 byte Bsize DUP(?)
+a11 byte Bsize DUP(?)
+a12 byte Bsize DUP(?)
+a13 byte Bsize DUP(?)
+a14 byte Bsize DUP(?)
+a15 byte Bsize DUP(?)
+a16 byte Bsize DUP(?)
+a17 byte Bsize DUP(?)
+a18 byte Bsize DUP(?)
+a19 byte Bsize DUP(?)
+a20 byte Bsize DUP(?)
+a21 byte Bsize DUP(?)
+a22 byte Bsize DUP(?)
+a23 byte Bsize DUP(?)
+a24 byte Bsize DUP(?)
+a25 byte Bsize DUP(?)
+v1 dd ?                   ;used variables to store data
+v2 dd ?
+v3 dd ?
+v4 dd ?
+v5 dd ?
+v6 dd ?
+v7 dd ?
+v8 dd ?
+v9 dd ?
+v10 dd ?
+v11 dd ?
+v12 dd ?
+v13 dd ?
+v14 dd ?
+v15 dd ?
+v16 dd ?
+v17 dd ?
+v18 dd ?
+v19 dd ?
+v20 dd ?
+v21 dd ?
+v22 dd ?
+v23 dd ?
+v24 dd ?
+v25 dd ?
+v26 dd ?
+v27 dd ?
+v28 dd ?
+v29 dd ?
+v30 dd ?
+v31 dd ?
+v32 dd ?
+v33 dd ?
+v34 dd ?
+v35 dd ?
+v36 dd ?
+v37 dd ?
+v38 dd ?
+v39 dd ?
+v40 dd ?
+v41 dd ?
+v42 dd ?
+v43 dd ?
+v44 dd ?
+a dd ?
+
+.code
+main proc
+mov eax,10
+call settextcolor
+
+Again:   ; we use this lable to again buy more cars
+
+mov edx,offset s1
+call openinputfile
+mov h,eax
+mov v1,eax
+mov edx,offset a1
+mov ecx,bsize
+mov eax,h
+call readfromfile
+mov v2,eax
+mov edx,offset a1
+call writestring
+mov eax,h 
+call closefile
+call crlf
+mov eax,3
+call settextcolor
+call crlf
+call crlf
+mov edx,offset msg1
+call writestring
+call readint
+
+Again1:                   ;this lable is used to again see car if customer has not intersted...
+
+.if eax==1                   ;condition is used to call  1st company 
+
+call crlf
+mov edx,offset s2
+call openinputfile
+mov h1,eax
+mov v3,eax
+
+mov edx,offset a2
+mov ecx,bsize
+mov eax,h1
+call readfromfile
+mov v4,eax
+mov edx,offset a2
+call writestring
+mov eax,h1
+call closefile
+CALL CRLF
+CALL CRLf
+
+.elseif eax==2                  ;condition is used to call  2nd company
+
+call crlf
+mov edx,offset s6
+call openinputfile
+mov h5,eax
+mov v11,eax
+mov edx,offset a6
+mov ecx,bsize
+mov eax,h5
+call readfromfile
+mov v12,eax
+mov edx,offset a6
+call writestring
+mov eax,h5
+call closefile
+CALL CRLF
+CALL CRLf
+
+.elseif eax==3            ;condition is used to call  3rd company
+
+call crlf
+mov edx,offset s10
+call openinputfile
+mov h9,eax
+mov v19,eax
+mov edx,offset a10
+mov ecx,bsize
+mov eax,h9
+call readfromfile
+mov v20,eax
+mov edx,offset a10
+call writestring
+mov eax,h9
+call closefile
+CALL CRLF
+CALL CRLf
+
+.elseif eax==4                     ;condition is used to call  4th company
+
+call crlf
+mov edx,offset s14
+call openinputfile
+mov h13,eax
+mov v27,eax
+
+mov edx,offset a14
+mov ecx,bsize
+mov eax,h13
+call readfromfile
+mov v28,eax
+mov edx,offset a14
+call writestring
+mov eax,h13
+call closefile
+CALL CRLF
+CALL CRLf
+
+.elseif eax==5                     ;condition is used to call  5th company
+
+call crlf
+mov edx,offset s18
+call openinputfile
+mov h17,eax
+mov v35,eax
+
+mov edx,offset a18
+mov ecx,bsize
+mov eax,h17
+call readfromfile
+mov v36,eax
+mov edx,offset a18
+call writestring
+mov eax,h17
+call closefile
+CALL CRLF
+CALL CRLf
+
+.else
+call crlf
+call crlf
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset msg3
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset msg1
+call writestring
+call readint
+jmp Again1
+call crlf
+call crlf
+jmp next
+.endif
+mov eax,7
+call settextcolor
+
+Again2:                             ;we use this lable to again see car
+
+call crlf
+call crlf
+mov edx,offset msg2
+call writestring
+call readint
+mov ebx,eax
+
+.if ebx==1                   ;conditions are used to call  1st car of 1st comapny
+
+mov edx,offset s3
+call openinputfile
+mov h2,eax
+mov v5,eax
+mov edx,offset a3
+mov ecx,bsize
+mov eax,h2
+call readfromfile
+mov v6,eax
+mov edx,offset a3
+call writestring
+mov eax,h2
+call closefile
+call crlf
+
+.elseif ebx==2               ;conditions are used to call  2nd car of 1st comapny
+
+mov edx,offset s4
+call openinputfile
+mov h3,eax
+mov v7,eax
+mov edx,offset a4
+mov ecx,bsize
+mov eax,h3
+call readfromfile
+mov v8,eax
+mov edx,offset a4
+call writestring
+mov eax,h3
+call closefile
+call crlf
+
+.elseif ebx==3          ;conditions are used to call  3rd car of 1st comapny
+
+mov edx,offset s5
+call openinputfile
+mov h4,eax
+mov v9,eax
+mov edx,offset a5
+mov ecx,bsize
+mov eax,h4
+call readfromfile
+mov v10,eax
+mov edx,offset a5
+call writestring
+mov eax,h4
+call closefile
+call crlf
+
+.elseif ebx==11           ;conditions are used to call  1st car of 2nd comapny
+
+mov edx,offset s7
+call openinputfile
+mov h6,eax
+mov v13,eax
+mov edx,offset a7
+mov ecx,bsize
+mov eax,h6
+call readfromfile
+mov v14,eax
+mov edx,offset a7
+call writestring
+mov eax,h6
+call closefile
+call crlf
+
+.elseif ebx==12                 ;conditions are used to call  2nd car of 2nd comapny
+
+mov edx,offset s8
+call openinputfile
+mov h7,eax
+mov v15,eax
+mov edx,offset a8
+mov ecx,bsize
+mov eax,h7
+call readfromfile
+mov v16,eax
+mov edx,offset a8
+call writestring
+mov eax,h7
+call closefile
+call crlf
+
+.elseif ebx==13            ;conditions are used to call  3rd car of 2nd comapny
+
+mov edx,offset s9
+call openinputfile
+mov h8,eax
+mov v17,eax
+mov edx,offset a9
+mov ecx,bsize
+mov eax,h8
+call readfromfile
+mov v18,eax
+mov edx,offset a9
+call writestring
+mov eax,h8
+call closefile
+call crlf
+
+.elseif ebx==21         ;conditions are used to call  1st car of 3rd comapny
+
+mov edx,offset s11
+call openinputfile
+mov h10,eax
+mov v21,eax
+mov edx,offset a11
+mov ecx,bsize
+mov eax,h10
+call readfromfile
+mov v22,eax
+mov edx,offset a11
+call writestring
+mov eax,h10
+call closefile
+call crlf
+
+.elseif ebx==22              ;conditions are used to call  2nd car of 3rd comapny
+
+mov edx,offset s12
+call openinputfile
+mov h11,eax
+mov v23,eax
+mov edx,offset a12
+mov ecx,bsize
+mov eax,h11
+call readfromfile
+mov v24,eax
+mov edx,offset a12
+call writestring
+mov eax,h11
+call closefile
+call crlf
+
+.elseif ebx==23             ;conditions are used to call  3rd car of 3rd comapny
+
+mov edx,offset s13
+call openinputfile
+mov h12,eax
+mov v25,eax
+mov edx,offset a13
+mov ecx,bsize
+mov eax,h12
+call readfromfile
+mov v26,eax
+mov edx,offset a13
+call writestring
+mov eax,h12
+call closefile
+call crlf
+
+.elseif ebx==31               ;conditions are used to call  1st car of 4th comapny
+
+mov edx,offset s15
+call openinputfile
+mov h14,eax
+mov v29,eax
+mov edx,offset a15
+mov ecx,bsize
+mov eax,h14
+call readfromfile
+mov v30,eax
+mov edx,offset a15
+call writestring
+mov eax,h14
+call closefile
+call crlf
+
+.elseif ebx==32               ;conditions are used to call 2nd car of 4th comapny
+
+mov edx,offset s16
+call openinputfile
+mov h15,eax
+mov v31,eax
+mov edx,offset a16
+mov ecx,bsize
+mov eax,h15
+call readfromfile
+mov v32,eax
+mov edx,offset a16
+call writestring
+mov eax,h15
+call closefile
+call crlf
+
+.elseif ebx==33              ;conditions are used to call 3rd car of 4th comapny
+
+mov edx,offset s17
+call openinputfile
+mov h16,eax
+mov v33,eax
+mov edx,offset a17
+mov ecx,bsize
+mov eax,h16
+call readfromfile
+mov v34,eax
+mov edx,offset a17
+call writestring
+mov eax,h16
+call closefile
+call crlf
+
+.elseif ebx==41                 ;conditions are used to call  1st car of 5th comapny
+
+mov edx,offset s19
+call openinputfile
+mov h18,eax
+mov v37,eax
+mov edx,offset a19
+mov ecx,bsize
+mov eax,h18
+call readfromfile
+mov v38,eax
+mov edx,offset a19
+call writestring
+mov eax,h18
+call closefile
+call crlf
+
+.elseif ebx==42            ;conditions are used to call  2nd car of 5th comapny
+
+mov edx,offset s20
+call openinputfile
+mov h19,eax
+mov v39,eax
+mov edx,offset a20
+mov ecx,bsize
+mov eax,h19
+call readfromfile
+mov v40,eax
+mov edx,offset a20
+call writestring
+mov eax,h19
+call closefile
+call crlf
+
+.elseif ebx==43              ;conditions are used to call  3rd car of 5th comapny
+
+mov edx,offset s21
+call openinputfile
+mov h20,eax
+mov v41,eax
+mov edx,offset a21
+mov ecx,bsize
+mov eax,h20
+call readfromfile
+mov v42,eax
+mov edx,offset a21
+call writestring
+mov eax,h20
+call closefile
+call crlf
+
+.else
+call crlf
+call crlf
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset msg3
+call writestring
+call crlf
+call crlf
+
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+
+jmp Again2                ;use for again selction of car
+
+call crlf
+call crlf
+jmp next
+.endif
+mov eax,7
+call settextcolor               ;we use this function for color the lines
+call crlf
+call crlf
+mov edx,offset msg4
+call writestring
+call readint
+mov esi,eax
+call crlf
+call crlf
+
+.if esi==1                    ;we use this condition to see again car if customer not interested in this car....
+
+jmp Again
+
+.endif
+mov eax,6
+call settextcolor
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+call crlf
+
+mov edx,offset str8
+call writestring
+call readint
+mov a,eax
+push a
+call crlf
+call payment
+call crlf
+mov eax,7
+call settextcolor
+call crlf
+call crlf
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+call crlf
+mov eax,9
+call settextcolor
+mov edx,offset str5
+call writestring
+call readint
+
+.if eax==1              ;we use this condition for home delivery
+
+call crlf
+call crlf
+call crlf
+mov edx,offset str1
+call writestring
+mov edx,offset a23
+mov ecx, bsize
+call readString
+mov ebp,edx
+call crlf
+mov edx,offset str2
+call writestring
+mov ecx, bsize
+call readString
+mov esi,eax
+call crlf
+mov edx,offset str3
+call writestring
+mov ecx, bsize
+call readString
+mov edx,eax
+call crlf
+mov edx,offset str4
+call writestring
+mov esi, bsize
+call readString
+mov edx,eax
+call crlf
+mov edx,offset str6
+call writestring
+mov edx,offset a25
+mov ecx, bsize
+call readString
+mov esp,edx
+mov edx,offset a24
+mov ecx, bsize
+call readString
+call crlf
+call crlf
+call crlf
+call crlf
+mov eax,8
+call settextcolor
+mov edx,offset msg7
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset msg8
+call writestring
+mov edx,offset a25
+mov esp,edx
+call writestring
+call crlf
+
+.else                       ;we use this condition for customer to provide information.....
+
+call crlf
+call crlf
+call crlf
+mov eax,3
+call settextcolor
+mov edx,offset str1
+call writestring
+mov edx,offset a23
+mov ecx, bsize
+call readString
+mov ebp,edx
+call crlf
+mov edx,offset str2
+call writestring
+mov ecx, bsize
+call readString
+mov esi,eax
+call crlf
+mov edx,offset str3
+call writestring
+mov ecx, bsize
+call readString
+mov edx,eax
+call crlf
+mov edx,offset str4
+call writestring
+mov esi, bsize
+call readString
+mov edx,eax
+call crlf
+.endif
+
+mov eax,10
+call settextcolor
+call crlf
+call crlf
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+mov edx,offset msg5
+call writestring
+mov edx,offset a23
+mov ebp,edx
+call writestring
+call crlf
+mov edx,offset s22
+call openinputfile
+mov h21,eax
+mov v43,eax
+mov edx,offset a22
+mov ecx,bsize
+mov eax,h21
+call readfromfile
+mov v44,eax
+mov edx,offset a22
+call writestring
+mov eax,h21
+call closefile
+call crlf
+mov eax,8
+call settextcolor
+
+call crlf
+mov edx,offset msg6
+call writestring
+call readint
+call crlf
+call crlf
+
+.if eax==1              ;we use this condition for customer to buy more cars...
+jmp Again
+
+.else
+mov edx,offset str0
+call writestring
+call crlf
+call crlf
+.endif
+
+next:                         ;we use this lable to end code
+mov eax,5
+call settextcolor
+exit
+main endp
+
+payment proc          ; we use payment procudure to check conditions for payment...
+
+push ebp
+mov ebp,esp
+mov eax,[ebp+8]
+
+.if eax==1              ; we use this condition for online payment
+
+mov edx,offset str9
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset str10
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset str11
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset str12
+call writestring
+call crlf
+call crlf
+call crlf
+
+.else                   ;we use this condition to take payment by check
+
+mov edx,offset str9
+call writestring
+call crlf
+call crlf
+call crlf
+mov edx,offset str11
+call writestring
+call crlf
+.endif
+pop ebp
+ret
+payment endp 
+end main               

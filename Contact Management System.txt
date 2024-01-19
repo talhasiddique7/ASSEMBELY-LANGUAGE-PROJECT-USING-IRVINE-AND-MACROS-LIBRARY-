@@ -1,0 +1,198 @@
+Include irvine32.inc
+Include macros.inc 
+Buffsize =2000
+.data
+array byte Buffsize dup(?) 	
+newline byte " ",0dh,0ah,0 
+spc byte "     ",0
+filename byte "Contacts.txt",0 	
+Heading1 byte "                             ----------------------------------------------------   ",0
+Heading2 byte "                             |              Contact Management System              |   ",0 
+Heading3 byte "                             ----------------------------------------------------   ",0	
+Heading4 byte "                             ----------------------------------------------------   ",0
+Heading5 byte "                             |     faiza qudr             22024119162            |   ",0 
+Heading6 byte "                             |    maryam shehzadi         21017119019            |   ",0 
+Heading7 byte "                             |    anoosha khalid          22024119169            |   ",0 
+Heading10 byte "                             ----------------------------------------------------   ",0	
+fhandler handle ?
+filehandle handle ?
+byteswritten dd ? 	
+stringlength dd ? 
+
+.code
+main proc 
+		
+
+mov edx,offset Heading1
+call writestring
+call crlf
+mov edx,offset Heading2
+call writestring
+call crlf
+mov edx,offset Heading3
+call writestring
+call crlf
+mov edx,offset Heading4
+call writestring
+call crlf
+mov edx,offset Heading5
+call writestring
+call crlf
+mov edx,offset Heading6
+call writestring
+call crlf
+mov edx,offset Heading7
+call writestring
+call crlf
+mov edx,offset Heading10
+call writestring
+M:
+call crlf
+mWrite "1. Add Contacts into the file"
+call crlf
+ mWrite       "2. Read Contacts from the file"
+ call crlf
+ mWrite       "3. Exit"
+ call crlf
+  mWrite      "Enter your choice:-"
+call readint
+call crlf
+.if eax==1
+jmp L
+.elseif eax==2
+jmp R
+.elseif eax==3
+exit
+.else
+.endif
+
+L:
+mov edx,offset filename		
+call createoutputfile 		
+mov fhandler,eax 
+.repeat 
+call crlf
+mWrite "                        -----------Enter Contact Details that you want to Insert--------- "
+call crlf
+mWrite "Enter the First Name: "			
+mov ecx, Buffsize 			
+mov edx, offset array 			
+call readstring 			
+mov stringlength,eax 			
+mov eax,fhandler 			
+mov edx,offset array 			
+mov ecx,stringlength 			
+call writetofile 			
+mov byteswritten,eax 			
+mov eax,fhandler 			
+mov edx,offset spc 			
+mov ecx,5			
+call writetofile 			
+mov byteswritten,eax 
+
+mWrite "Enter the Last Name: "
+mov ecx, Buffsize 			
+mov edx, offset array 			
+call readstring 			
+mov stringlength,eax 			
+mov eax,fhandler 			
+mov edx,offset array 			
+mov ecx,stringlength 			
+call writetofile 			
+mov byteswritten,eax 			
+mov eax,fhandler 			
+mov edx,offset spc 			
+mov ecx,5			
+call writetofile  			
+mov byteswritten,eax 
+
+mWrite "Enter the Phone no.: "
+mov ecx, Buffsize 			
+mov edx, offset array 			
+call readstring 			
+mov stringlength,eax 			
+mov eax,fhandler 			
+mov edx,offset array 			
+mov ecx,stringlength 			
+call writetofile 			
+mov byteswritten,eax 			
+mov eax,fhandler 			
+mov edx,offset spc 			
+mov ecx,5			
+call writetofile 			
+mov byteswritten,eax 
+
+mWrite "Enter the Email: "
+mov ecx, Buffsize 			
+mov edx, offset array 			
+call readstring 			
+mov stringlength,eax 			
+mov eax,fhandler 			
+mov edx,offset array 			
+mov ecx,stringlength 			
+call writetofile 			
+mov byteswritten,eax 			
+mov eax,fhandler 			
+mov edx,offset spc 			
+mov ecx,5			
+call writetofile 			
+mov byteswritten,eax 
+
+mWrite "Enter the Address: " 
+mov ecx, Buffsize 			
+mov edx, offset array 			
+call readstring 			
+mov stringlength,eax 			
+mov eax,fhandler 			
+mov edx,offset array 			
+mov ecx,stringlength 			
+call writetofile 			
+mov byteswritten,eax 			
+mov eax,fhandler 			
+mov edx,offset newline 			
+mov ecx,2 			
+call writetofile 			
+mov byteswritten,eax 
+call crlf
+
+mWrite "Do You Want to Enter another Contact? [1.Yes 2. No]"
+call readint
+.if eax==1
+jmp L
+.elseif eax==2
+jmp N
+.else
+.endif
+call crlf 	
+inc eax 
+.until eax>3 
+N:
+mov eax,fhandler 		
+call closefile
+jmp M
+
+R:
+call crlf
+mwrite"-------------------------------------------------------"
+call crlf
+mov edx,offset filename
+call OpenInputFile
+mov filehandle,eax
+mov edx,offset array
+mov ecx, Buffsize
+call ReadFromFile
+
+mov ecx,eax
+mov edx,offset array
+call writestring
+mov eax,filehandle
+call CloseFile
+call crlf
+mwrite"-------------------------------------------------------"
+call crlf
+jmp M
+						
+	
+exit
+ main endp 
+ end main

@@ -1,0 +1,633 @@
+
+
+;TIC TAC TOE GAME 
+
+include irvine32.inc
+include macros.inc
+limit = 30 ;used for limiting the number of bytes in arr used to hold the use ID
+.data
+
+curr_plr   byte  "X"    ;denotes the player one the vurrent player having its turn
+;given below are the varaibles used in main function
+a     dd ?    
+choice       dd ?
+winner       dd 0
+player1win       dd 0
+player2win        dd 0
+play_again      byte 2 DUP (?)  ;array for having two char y or n
+id_file  byte "ID.txt",0     ;file for holding the ID
+result_file  byte  "Result.txt",0  ;file for holding game status
+id_handler  handle ?   ;handler for ID file
+result_handler  handle  ?   ;handler for result file
+user_id  dd limit dup(?)   ;arr for containg the ID
+result dd limit dup(?)      ;for result
+id dd ?    ;id variable which is to be input
+
+; The board which we will deal with all the bytes and stuff
+;10,13 are used to move to the next line in the string of board
+
+Board byte "        |       |       ",10,13,    
+           "        |       |       ",10,13,
+           " -------o-------o-------",10,13, 
+           "        |       |       ",10,13,
+           "        |       |       ",10,13,
+           "        |       |       ",10,13,
+           " -------o-------o-------",10,13,
+           "        |       |       ",10,13, 
+           "        |       |       ",10,13,
+           "        |       |       ",10,13,0
+
+.code
+
+file_handling proc    ;used for the purpose to save the data of last user in the file 
+call clrscr
+mov edx,offset id_file    ;moving the filename into edx
+call openinputfile    
+mov id_handler, eax
+mwrite"Last Used ID = ",0
+mov edx, offset user_id
+mov eax, id_handler
+mov ecx, 30
+call readfromfile
+mov edx, offset user_id
+call writestring
+mov eax, id_handler
+call closefile
+
+mov edx, offset result_file
+call openinputfile
+mov result_handler,eax
+mov edx, offset result
+mov ecx, 1
+call readfromfile
+call crlf
+mwrite"Previous Game Winner = ",0
+mov edx, offset result
+mov eax, result_handler
+mov ecx, 1
+call writestring
+mov eax , result_handler
+call closefile
+call crlf
+
+ret
+file_handling endp
+
+
+main proc   ; the main function holding every call for user defined function
+     
+Game: 
+
+call clrscr
+call intro   ;call the logo of game
+
+     push offset Board    ;pushing into stack
+     call clean_Board     ;calling this to clean up the board for a fresh start
+     call options
+     call crlf
+     mwrite"Enter Your Choice: "
+     call readint
+     mov a, eax
+     .if a == 1
+     call clrscr
+
+     ; print starting board
+     mwrite "Enter Your ID: ",0
+     ;when user enter id saving it into the file we created for it
+     mov edx, offset user_id
+     mov ecx, limit
+     call readstring
+     mov id , eax
+     mov edx,offset id_file
+     call createoutputfile
+     mov id_handler, eax
+     mov edx, offset user_id
+     mov ecx, id
+     mov eax, id_handler
+     call writetofile
+     mov eax, id_handler
+     call closefile
+
+     push offset Board
+     call disp_Board      ;displaying the board into screen
+
+
+L1:   
+
+     mov al,curr_plr      ;working as player1 before switch func is called       
+     push eax               ;pushing into stack       
+     push offset Board      ;the address of board for asking the place  
+     call choose_Opt        ;user-def func for determinin pos
+     
+     push offset Board      ;now update board
+     call disp_Board       
+
+     ;cheking win possiblity
+     push offset winner     ;pushing the winner address       
+     mov al,curr_plr            
+     push eax                      
+     push offset Board             
+     call check_Winner      ;determining whether win or not
+     mov eax,winner        
+     cmp eax,1             ;if true        
+     je Win
+     cmp eax,2
+     je Tie
+
+
+     push offset curr_plr        
+     call switch_the_Player
+     jmp L1
+
+Win:
+     push offset player1win
+     push offset player2win
+     mov al,curr_plr             
+     push eax                     
+     call game_Winner  ;once winner detected anouncing it on screen
+     
+
+     jmp Again
+
+Tie:
+     mwrite"Good Game But it's a Tie !!"
+     jmp Again
+     
+Again:
+     call crlf
+     mwrite"Do You Want To Play again? [Y/N]"
+     mov edx,offset play_again
+     mov ecx,2   ;counter becz two possibilities
+     call readstring
+     mov al,play_again
+     cmp al,'Y'
+     je Game
+     cmp al,'N'
+     je bye
+     bye:
+     mwrite"THANKS FOR PLAYING THE GAME :) "
+     jmp ex
+ .elseif a == 2
+ call Rules
+ jmp Game
+ .elseif a == 3
+ call file_handling
+ call waitmsg
+ jmp Game
+
+ .elseif a == 4
+Finish: 
+     .endif
+     call crlf
+     mwrite"Thanks For Visiting! "
+     call crlf
+     call waitmsg
+	ex:
+     exit
+main endp     ;end of the main function
+
+intro proc      ;printing the logo for the game
+    mwrite "                             --------------------------------------     "
+    call crlf
+    mwrite "                             *                                    *       "
+    call crlf
+    mwrite "                                *  WELCOME TO TIC TAC TOE GAME  *           "
+    call crlf
+    mwrite "                             *                                    *       "
+    call crlf
+    mwrite "                             -------------------------------------      "
+    call crlf 
+    ret
+intro endp
+
+Rules proc   ;used for showing the rules of the game 
+    call clrscr
+    call crlf
+    mwrite "Following are the rules of the game :- "
+    call crlf
+    call crlf
+    mwrite "1- If 3 options are vertically consecutive user wins"
+    call crlf
+    mwrite "2- If 3 options are horizontally consecutive user wins"
+    call crlf
+    mwrite "3- If 3 options are diagonally consecutive user wins"
+    call crlf
+    call waitmsg
+    call clrscr
+    ret
+Rules endp
+
+
+options proc     ;used for showing option when we start the game, options for the user
+    call crlf
+    mwrite "1. Play Game"
+    call crlf
+    mwrite "2. View Rules"
+    call crlf
+    mwrite "3. View Previous Data"
+    call crlf
+    mwrite "4. Exit"
+    call crlf
+    ret
+options endp
+
+
+clean_Board proc    ;for cleaning the board simply moving emptiness in all 
+
+     push ebp
+     mov  ebp,esp
+
+     mov esi,[ebp + 8]     
+     mov al,' '  ;moving empty byte in reg 
+     ;moving empty space in all the respective places where the sign would be (X or O)
+     mov [esi + 30],al  ;first box
+     mov [esi + 38],al  ;second box
+     mov [esi + 46],al  ;third box
+     mov [esi + 134],al ;forth box
+     mov [esi + 142],al ;fifth box
+     mov [esi + 150],al ;sixth box
+     mov [esi + 238],al ;seventh box
+     mov [esi + 246],al ;eighth box
+     mov [esi + 254],al ;nineth box
+  
+     pop  ebp
+     ret  
+clean_Board endp
+
+
+disp_Board proc  ;for printing the board 
+     mwrite"Player 1 = X  and  Player 2 = O "
+     call crlf
+     call crlf
+     push ebp
+     mov  ebp,esp
+     
+     ; print board
+     mov edx,[ebp + 8]     ;moving the board
+     call writestring      ;calling to display the board
+  
+     pop  ebp
+     ret  
+disp_Board endp
+
+choose_Opt proc   ;the actual proces where the option is choosed
+
+     push ebp
+     mov  ebp,esp
+  
+     call crlf
+     mov  eax,[ebp + 12]  ;mov the symbol here
+     call writechar
+     mwrite"'s turn. Please choose a square: "
+
+Checking:
+     call readdec  ;inputting the place
+
+     mov  choice,eax
+     ; comparing the choice and jump on respective place
+     .if choice < 1
+     jmp invalid
+     
+           
+     .elseif choice == 1
+     call clrscr
+      jmp Box1     
+     .elseif choice == 2
+     call clrscr
+     jmp Box2 
+     .elseif choice == 3
+     call clrscr
+     jmp Box3
+     .elseif choice == 4
+     call clrscr
+     jmp Box4
+     .elseif choice == 5
+     call clrscr
+     jmp Box5 
+     .elseif choice == 6
+     call clrscr
+     jmp Box6
+     .elseif choice == 7
+     call clrscr
+     jmp Box7
+     .elseif choice == 8
+     call clrscr
+     jmp Box8
+     .elseif choice == 9
+     call clrscr
+     jmp Box9 
+
+     .elseif choice > 9
+     jmp invalid
+     .endif
+              ;once place is entered we have to deal with the bytes in the string like for moving to different specific positions      
+Box1:
+     mov esi,[ebp + 8]       
+     add esi,30               ;specified for 1st box   
+     mov al,' '
+     .if al == [esi]
+     mov al,[ebp + 12] 
+     mov [esi],al 
+     jmp close
+     .else
+     jmp invalid
+     .endif
+Box2:
+     mov esi,[ebp + 8]        
+     add esi,38               
+     mov al,' '
+     .if al == [esi]  
+     mov al,[ebp + 12]        
+     mov [esi],al            
+     jmp close
+     .else
+     jmp invalid
+     .endif
+     
+
+Box3:
+     mov esi,[ebp + 8]        
+     add esi,46               
+     mov al,' '
+
+     .if al == [esi]  
+     mov al,[ebp + 12]       
+     mov [esi],al             
+     jmp close
+
+     .else
+     jmp invalid
+     .endif             
+     
+Box4:
+     mov esi,[ebp + 8]        
+     add esi,134              
+     mov al,' '
+
+     .if al == [esi]  
+     mov al,[ebp + 12]        
+     mov [esi],al             
+     jmp close
+
+     .else
+     jmp invalid
+     .endif              
+     
+Box5:
+     mov esi,[ebp + 8]       
+     add esi,142             
+     mov al,' '
+     .if al == [esi]  
+     mov al,[ebp + 12]        
+     mov [esi],al             
+     jmp close
+
+     .else
+     jmp invalid
+     .endif             
+     
+
+Box6:
+     mov esi,[ebp + 8]        
+     add esi,150              
+     mov al,' '
+     .if al == [esi]  
+      mov al,[ebp + 12]        
+     mov [esi],al          
+     jmp close
+
+     .else
+     jmp invalid
+     .endif
+
+Box7:
+     mov esi,[ebp + 8]        
+     add esi,238            
+     mov al,' '
+     .if al == [esi]   
+     mov al,[ebp + 12]        
+     mov [esi],al             
+     jmp close
+
+     .else
+     jmp invalid
+     .endif            
+     
+
+Box8:
+     mov esi,[ebp + 8]       
+     add esi,246              
+     mov al,' '
+     .if al == [esi]    
+     mov al,[ebp + 12]       
+     mov [esi],al             
+     jmp close
+
+      .else
+     jmp invalid
+     .endif 
+
+Box9:
+     mov esi,[ebp + 8]        
+     add esi,254              
+     mov al,' '
+     .if al == [esi]    
+     mov al,[ebp + 12]        
+     mov [esi],al             
+     jmp close
+
+     .else
+     jmp invalid
+     .endif              
+     
+
+invalid:
+     mwrite"Invalid choice. Please choose correct one: "
+     jmp  Checking
+
+close:
+     pop  ebp
+     ret 
+choose_Opt endp
+
+
+check_Winner proc
+
+     push ebp
+     mov  ebp,esp
+
+     mov bl,[ebp + 12]       
+     mov edi,[ebp + 16]       
+;after that check the chronology that are rows matching for this used if condition and giving them the specified positions
+Row1:
+     mov esi,[ebp + 8]       
+     add esi,30
+     .if [esi] == bl && [esi + 8] == bl && [esi + 16] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp Row2
+     .endif
+
+Row2:
+     mov esi,[ebp + 8]        
+     add esi,134              
+     .if [esi] == bl && [esi + 8] == bl && [esi + 16] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp Row3
+     .endif      
+
+Row3:
+     mov esi,[ebp + 8]       
+     add esi,238             
+     .if [esi] == bl && [esi + 8] == bl && [esi + 16] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp Col1
+     .endif   
+;same thing for the columns
+Col1:
+       mov esi,[ebp + 8]       
+       add esi,30 
+      .if [esi] == bl && [esi + 104] == bl && [esi + 208] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp Col2
+     .endif
+      
+
+Col2:
+     mov esi,[ebp + 8]       
+     add esi,38              
+     .if [esi] == bl && [esi + 104] == bl && [esi + 208] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp Col3
+     .endif       
+
+Col3:
+     mov esi,[ebp + 8]        
+     add esi,46              
+     .if [esi] == bl && [esi + 104] == bl && [esi + 208] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp digonal1
+     .endif       
+     ;now for the diagonals
+digonal1:
+     mov esi,[ebp + 8]        
+     add esi,30               
+     .if [esi] == bl && [esi + 112] == bl && [esi + 224] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp digonal2
+     .endif          
+
+digonal2:
+     mov esi,[ebp + 8]      
+     add esi,46             
+     .if [esi] == bl && [esi + 96] == bl && [esi + 192] == bl                         
+          jmp found_the_winner  
+          
+     .else
+     jmp check_for_tie
+     .endif       
+    ;checking whether it is a draw
+check_for_tie :
+     mov esi,[ebp + 8]       
+     mov bl,' '
+     .if [esi + 30] == bl || [esi + 38] == bl || [esi + 46] == bl || [esi + 134] == bl || [esi + 142] == bl || [esi + 150] == bl ||[esi + 238] == bl || [esi + 246] == bl || [esi + 254] == bl    
+     jmp No_winner         
+     .else
+     jmp tie
+     .endif
+
+No_winner:
+     mov edx,0
+     mov [edi],edx
+     jmp down
+
+found_the_winner:
+     mov edx,1     ;true / there is winner
+     mov [edi],edx
+     
+     jmp down
+
+tie:
+     mov edx,2    ;false / like a draw
+     mov [edi],edx
+     jmp down
+
+down:  
+     pop  ebp
+     ret 
+check_Winner endp
+
+switch_the_Player proc   ;used for switching the turns
+
+     push ebp
+     mov  ebp,esp
+     
+     mov esi,[ebp + 8]   
+     mov eax ,[esi]            
+
+     mov ebx,'X'   ;player1  
+     mov edx,'O'    ; player2  
+
+     cmp al,bl             
+     je plr1toplr2
+     cmp al,dl          
+     je plr2toplr1
+
+plr1toplr2:
+     mov al,dl         
+     jmp Finish
+plr2toplr1:
+     mov al,bl      
+     jmp Finish
+     
+Finish:
+
+   mov [esi],al
+     pop  ebp
+     ret 
+switch_the_Player endp
+
+game_Winner proc
+     push ebp
+     mov  ebp,esp
+     
+     mov eax,[ebp + 8]           
+     call crlf
+     call writechar
+     mwrite" is the Winner! "
+
+     ;saving the game winner in file
+     mov esi , offset result
+     mov [esi], eax
+     mov edx,offset result_file
+     call createoutputfile
+     mov result_handler , eax
+     mov edx,offset result
+     mov ecx, 1
+     mov eax, result_handler
+     call writetofile
+     mov eax, result_handler
+     call closefile
+     call crlf
+     pop  ebp
+     ret 
+game_Winner endp
+
+
+
+end main          ;end of program
+
+

@@ -1,0 +1,272 @@
+INCLUDE Irvine32.inc
+INCLUDE	Macros.inc
+.data
+	input DD ?			; input value
+	output REAL4 ? 
+	output2 REAL4 ? ; output value
+	selection DWORD ?	; user's selection
+	choice DD ?
+	thousand DD 100000
+	rate1 REAL4 0.0035734705546		;1 dollar = 279.84 pkr 
+	rate2 REAL4 0.2949852507374		;1 indian rupee = 3.39 pkr
+	rate3 REAL4 0.0032489684525		;1 euro = 307.79 pkr
+	rate4 REAL4 0.0130992926381		;1 UAE Dirham = 76.34 pkr
+	rate5 REAL4 0.0027890112954		;1 pound sterling = 358.55 pkr
+	rate6 REAL4 0.0010900014170		;1 Kuwaiti Dinar = 917.43 pkr
+	MainPrompt BYTE "============================================ WELCOME TO EXCHANGE BOT ============================================",0
+	choiceMsg BYTE "Your choice: ", 0
+	mainMenu1 BYTE "Select a exchange you want to do: ", 0DH,0AH, 0
+	buffer1 BYTE "USER Converted from Pakistani Rupee to US Dollar.",0DH,0AH,0
+	buffer2 BYTE "USER Converted from Pakistani Rupee to Indian Rupee.",0DH,0AH,0
+	buffer3 BYTE "USER Converted from Pakistani Rupee to Euro.", 0DH,0AH,0
+	buffer4 BYTE "USER Converted from Pakistani Rupee to UAE Dirham.",0DH,0AH,0
+	buffer5 BYTE "USER Converted from Pakistani Rupee to Pound Sterling.", 0DH,0AH,0
+	buffer6 BYTE "USER Converted from Pakistani Rupee to Kuwaiti Dinar.",0DH,0AH,0
+	filename byte "history.txt",0
+	fileHandle HANDLE ?
+	bytesWritten dd ?
+	errMsg byte "Can't Open file",0
+	prompt BYTE "Enter the amount of money you want to exchange: ",0
+	ending BYTE "Thank you for using this conversion system!",0
+	result BYTE "Converted Amount is: ", 0
+.code
+	main PROC
+		mov edx, offset filename
+		CALL CreateOutputFile
+		mov fileHandle, eax
+		.while 1						;Set up a loop to allow the user to perform multiple conversions
+			mov eax,red + (lightcyan * 16) ; white on blue
+			call SetTextColor
+			call DisplayMenu				
+			call CRLF
+	
+			.if eax == 1
+				CALL conversion1
+				push (lengthOF buffer1-1)
+				push offset buffer1
+				call saveToFile
+			.elseif eax == 2
+				CALL conversion2
+				push (lengthOF buffer2-1)
+				push offset buffer2
+				call saveToFile
+			.elseif eax == 3
+				CALL conversion3
+				push (lengthOF buffer3-1)
+				push offset buffer3
+				call saveToFile
+			.elseif eax == 4
+				CALL conversion4
+				push (lengthOF buffer4-1)
+				push offset buffer4
+				call saveToFile
+			.elseif eax == 5
+				CALL conversion5
+				push (lengthOF buffer5-1)
+				push offset buffer5
+				call saveToFile
+			.elseif eax == 6
+				CALL conversion6
+				push (lengthOF buffer6-1)
+				push offset buffer6
+				call saveToFile
+			.elseif eax == 7
+				.break
+			.else
+				mWrite "INVALID INPUT...",0
+				call waitmsg
+			.endif
+		.endw							
+	
+		 mov edx, offset ending
+		 call WriteString
+		 call CRLF
+		 mov eax, fileHandle
+		 call closefile
+		 exit
+	main ENDP
+
+	DisplayMenu PROC
+		Call Clrscr
+		mov edx, offset MainPrompt
+		call WriteString
+		call CRLF
+		call CRLF
+
+		mWrite < "1. Convert from Pakistani Rupee to US Dollar: ", 0DH,0AH>
+		mWrite < "2. Convert from Pakistani Rupee to Indian Rupee: ", 0DH,0AH>
+		mWrite < "3. Convert from Pakistani Rupee to Euro: ", 0DH,0AH>
+		mWrite < "4. Convert from Pakistani Rupee to UAE Dirham: ", 0DH,0AH>
+		mWrite < "5. Convert from Pakistani Rupee to Pound Sterling: ", 0DH,0AH>
+		mWrite < "6. Convert from Pakistani Rupee to Kuwaiti Dinar: ",0DH,0AH>
+		mWrite < "7. EXIT?",0DH,0AH>
+
+		mov edx, offset mainMenu1
+		call WriteString
+		call CRLF
+ 
+		;Get the user's selection
+		call CRLF
+		mov edx, offset choiceMsg
+		call WriteString
+		call ReadInt
+		ret
+	DisplayMenu ENDP
+
+	conversion1 PROC
+		mov edx, offset prompt
+		call CRLF
+		call WriteString 
+		call ReadFloat
+		fstp input
+
+		fld input
+		fld rate1
+		FMul
+		call CRLF
+		mov edx, offset result
+		call WriteString
+		fstp output
+		CALL showOutput
+
+		ret
+	conversion1 ENDP
+
+	conversion2 PROC
+		mov edx, offset prompt
+		call CRLF
+		call WriteString 
+		call ReadFloat
+		fstp input
+
+		fld input
+		fld rate2
+		FMul
+		call CRLF
+		mov edx, offset result
+		call WriteString
+		fstp output
+		CALL showOutput
+		ret
+	conversion2 ENDP
+
+	conversion3 PROC
+		mov edx, offset prompt
+		call CRLF
+		call WriteString 
+		call ReadFloat
+		fstp input
+
+		fld input
+		fld rate3
+		FMul
+		call CRLF
+		mov edx, offset result
+		call WriteString
+		fstp output
+		CALL showOutput
+		ret
+	conversion3 ENDP
+
+	conversion4 PROC
+		mov edx, offset prompt
+		call CRLF
+		call WriteString 
+		call ReadFloat
+		fstp input
+
+		fld input
+		fld rate4
+		FMul
+		call CRLF
+		mov edx, offset result
+		call WriteString
+		fstp output
+		CALL showOutput
+		ret
+	conversion4 ENDP
+
+	conversion5 PROC
+		mov edx, offset prompt
+		call CRLF
+		call WriteString 
+		call ReadFloat
+		fstp input
+
+		fld input
+		fld rate5
+		FMul
+		call CRLF
+		mov edx, offset result
+		call WriteString
+		fstp output
+		CALL showOutput
+		ret
+	conversion5 ENDP
+
+	conversion6 PROC
+		mov edx, offset prompt
+		call CRLF
+		call WriteString 
+		call ReadFloat
+		fstp input
+
+		fld input
+		fld rate6
+		FMul
+		call CRLF
+		mov edx, offset result
+		call WriteString
+		fstp output
+		CALL showOutput
+		ret
+	conversion6 ENDP
+
+	showOutput PROC
+		LOCAL intPart:DWORD,
+			  fracPart:DWORD,
+			  ctrlWord:WORD
+
+		; Change the rounding mode to truncate
+		fstcw ctrlWord		 ; store the current control word
+		mov ax, ctrlWord
+		or ax, 110000000000b		  ;set rounding mode to truncate
+		mov ctrlWord, ax
+		fldcw ctrlWord		 ; load the modified control word
+
+		; Convert the floating-point number to integer parts
+		fld output
+		fistp intPart		; convert with truncation
+
+		fld output
+		fisub intPart
+		fimul thousand
+		fistp fracPart ; convert with truncation
+
+		; Display the integer and fractional parts
+		mov eax, intPart
+		call WriteDec
+		mov al, '.'
+		call WriteChar
+		mov eax, fracPart
+		call WriteDec
+		call CRLF
+		call waitmsg
+		ret
+	showOutput endp
+
+	saveToFile PROC
+		push ebp
+		mov ebp, esp
+		pushad
+		mov edx, [ebp+8]
+		mov eax, fileHandle
+		mov ecx, [ebp+12]
+		Call WritetoFile
+		mov  bytesWritten,eax
+		popad
+		pop ebp
+		ret 4
+	saveToFile endp
+
+END main

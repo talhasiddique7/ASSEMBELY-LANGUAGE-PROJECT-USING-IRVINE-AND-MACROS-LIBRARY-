@@ -1,0 +1,189 @@
+ PROJECT OF COAL 
+GROUP #3:
+Group Members:
+M. Numan Razzaq (22024119-171)
+Muahmmad Bilal (22024119-141)
+Zain-ul-abdeen (22024119-140)
+Seeman Ali (22024119-135)
+M. Abubaker (22024119-133)
+Submitted to:
+Mr. Muhammad Jabbar
+UNIVERSITY OF GUJRAT
+PROJECT CODE:
+include irvine32.inc
+.data
+carRecord byte 50 dup(?)
+watermarkstring byte " [ Car parking system in 
+Assembly ]",0
+askingstring byte "1. Add Record 2. View Record 3. Delete Record 
+4. View Payment 5. Exit ",0
+choisestring byte "Enter Your Choise : ",0
+total dd 0
+farzi dd ?
+index dd 0
+single dd 50
+enteringPrompt byte "Enter The Vehicle Number (Digits Only) : ",0
+successPromtp byte "Your REcord Is Added SuccessFully!",0
+carNumber byte "Car Number : ",0
+EmptyString byte "No record Found! Enter Record First!",0
+carShowString byte " Showing Car Record : ",0
+continueString byte "Enter 1 To Continue : ",0
+Totalcar byte "Total Cars Parked in the Garage are : ",0
+TotalPayment byte "Total payment Collected : ",0
+carNumberaskingstring byte "Enter Car Number [Digits Only] To Delete : ",0
+alertString byte "Record Deleted SuccessFully!",0
+norecord byte "No such Record Found!",0
+.code
+main proc 
+l1:
+call crlf
+call crlf
+call crlf
+call crlf
+call crlf
+mov edx , offset watermarkstring
+call writestring
+call crlf
+mov edx , offset askingstring
+call writestring
+call crlf
+mov edx , offset choisestring
+call writestring
+call readint
+cmp eax ,1
+je addRecord
+cmp eax , 2
+je viewRecord
+cmp eax , 3
+je DeleteRecord
+cmp eax , 4
+je viewpayment
+cmp eax , 5
+je stop
+jmp l1
+addRecord:
+call addingFunction
+jmp l1
+viewRecord:
+call viewFunction
+jmp l1
+DeleteRecord:
+call DeleteRecordFunction
+jmp l1 
+viewpayment:
+call viewpaymentFunction
+jmp l1
+stop:
+exit
+main endp
+addingFunction proc
+mov edi , offset carRecord
+add edi , index
+mov edx, offset enteringPrompt
+call writestring
+call readint 
+mov [edi] , eax
+add index , 4
+mov eax ,total
+add eax , single 
+mov total , eax
+mov edx , offset successPromtp
+call writestring
+ret
+addingFunction endp
+viewFunction proc
+.if index ==0 
+mov edx , offset EmptyString
+call writestring
+call crlf
+jmp fff
+.endif
+mov edx, offset carShowString
+call writestring
+call crlf
+.if index == 4
+mov edi , offset carRecord
+mov eax , [edi]
+mov edx , offset carNumber
+call writestring
+call writedec
+call crlf
+jmp fff
+.endif
+mov ecx ,0
+mov edi , offset carRecord
+.while ecx<index
+mov edx , offset carNumber
+call writestring
+mov eax ,[edi]
+call writedec
+call crlf
+add edi , 4
+add ecx, 4
+.endw
+mov edx, offset continueString
+call writestring
+call readint
+fff:
+ret
+viewFunction endp
+viewpaymentFunction proc
+mov edx , offset Totalcar
+call writestring
+mov eax ,index
+mov ebx ,4
+mov edx ,0
+div ebx
+call writedec
+call crlf
+mov edx , offset TotalPayment
+call writestring
+mov eax , total
+call writedec
+ret
+viewpaymentFunction endp
+DeleteRecordFunction proc
+.if index==0
+mov edx ,offset EmptyString
+call writestring
+ret
+.else
+mov edi , offset carRecord
+mov eax, index
+mov ebx ,4
+sub eax , ebx
+add edi , eax
+mov eax, [edi]
+mov farzi , eax
+mov edx ,offset carNumberaskingstring
+call writestring
+call readint
+mov ecx ,0 
+mov edi , offset carRecord
+mov ebx ,farzi
+mov ebx , 0
+.while ecx < index
+.if [edi]==eax
+inc ebx
+mov esi , [edi]
+mov [edi] , ebx
+mov ebx , esi
+mov edx , offset alertString
+call writestring
+call crlf
+sub index ,4
+ret
+.endif
+add ecx , 4
+add edi ,4
+.endw
+.if ebx==0
+mov edx ,offset norecord
+call writestring
+call crlf
+ret
+.endif
+.endif
+ret
+DeleteRecordFunction endp
+end main
